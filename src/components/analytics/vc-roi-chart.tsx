@@ -48,6 +48,28 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
     return Number((num / den).toFixed(2))
   }, [vcTokens])
 
+  const xDomain = useMemo(() => {
+    if (vcTokens.length === 0) return [1, 1000]
+    const values = vcTokens.map((t) => t.vc_raised)
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    // Pad domain for log scale: round down/up to nearest power of 10
+    const logMin = Math.floor(Math.log10(min))
+    const logMax = Math.ceil(Math.log10(max))
+    return [Math.pow(10, logMin), Math.pow(10, logMax)]
+  }, [vcTokens])
+
+  const xTicks = useMemo(() => {
+    const [min, max] = xDomain
+    const ticks: number[] = []
+    let v = min
+    while (v <= max) {
+      ticks.push(v)
+      v *= 10
+    }
+    return ticks
+  }, [xDomain])
+
   if (vcTokens.length === 0) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -74,10 +96,12 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
             <XAxis
               dataKey="vc_raised"
               name="VC Raised"
+              type="number"
               stroke={CHART_THEME.axis}
               fontSize={12}
               scale="log"
-              domain={["auto", "auto"]}
+              domain={xDomain}
+              ticks={xTicks}
               tickFormatter={(v: number) => {
                 if (v >= 1000) return `$${(v / 1000).toFixed(0)}B`
                 if (v >= 1) return `$${v.toFixed(0)}M`
