@@ -47,7 +47,8 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
             {tokens.map((token, index) => {
               const isGreen = (token.fdv_change_pct ?? 0) >= 0
               const arrow = isGreen ? "▲" : "▼"
-              const absChange = token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"
+              const sign = isGreen ? "+" : "-"
+              const changeText = token.fdv_change_pct != null ? `${sign}${Math.abs(token.fdv_change_pct).toFixed(1)}%` : "N/A"
               return (
                 <TableRow
                   key={token.ticker}
@@ -66,10 +67,10 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                   <TableCell
                     className={cn(
                       "px-3 text-right font-medium",
-                      variant === "top" ? "text-green" : "text-red",
+                      isGreen ? "text-green" : "text-red",
                     )}
                   >
-                    {arrow} {absChange}
+                    {arrow} {changeText}
                   </TableCell>
                   <TableCell className="px-3 text-right text-muted-foreground">
                     {formatNumber(token.starting_fdv)}
@@ -99,8 +100,8 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">FDV Change: </span>
-                  <span className={variant === "top" ? "text-green" : "text-red"}>
-                    {isGreen ? "\u25B2" : "\u25BC"} {token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"}
+                  <span className={isGreen ? "text-green" : "text-red"}>
+                    {isGreen ? "\u25B2 +" : "\u25BC -"}{token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"}
                   </span>
                 </div>
                 <div>

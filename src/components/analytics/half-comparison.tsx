@@ -96,7 +96,7 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
                 <div
                   className={`text-lg font-semibold ${stats.median_change >= 0 ? "text-green" : "text-red"}`}
                 >
-                  {stats.median_change >= 0 ? "\u25B2" : "\u25BC"}{" "}
+                  {stats.median_change >= 0 ? "\u25B2 +" : "\u25BC -"}
                   {Math.abs(stats.median_change).toFixed(2)}%
                 </div>
               </div>
@@ -105,7 +105,7 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
                 <div
                   className={`text-lg font-semibold ${stats.avg_change >= 0 ? "text-green" : "text-red"}`}
                 >
-                  {stats.avg_change >= 0 ? "\u25B2" : "\u25BC"}{" "}
+                  {stats.avg_change >= 0 ? "\u25B2 +" : "\u25BC -"}
                   {Math.abs(stats.avg_change).toFixed(2)}%
                 </div>
               </div>

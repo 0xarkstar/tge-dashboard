@@ -105,7 +105,7 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
                     : `$${(row.median_starting_fdv / 1_000_000).toFixed(0)}M`}
                 </TableCell>
                 <TableCell className={`text-right ${row.median_change >= 0 ? "text-green" : "text-red"}`}>
-                  {row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%
+                  {row.median_change >= 0 ? "\u25B2 +" : "\u25BC -"}{Math.abs(row.median_change).toFixed(2)}%
                 </TableCell>
                 <TableCell className="text-right">{row.pct_green.toFixed(1)}%</TableCell>
                 <TableCell className="text-right text-muted-foreground">

@@ -26,7 +26,7 @@ export function TokenTicker({ tokens }: TokenTickerProps) {
                 "font-medium",
                 isPositive ? "text-green" : "text-red",
               )}>
-                {isPositive ? "\u25B2" : "\u25BC"}{" "}
+                {isPositive ? "\u25B2 +" : "\u25BC -"}
                 {Math.abs(token.fdv_change_pct ?? 0).toFixed(1)}%
               </span>
             </div>

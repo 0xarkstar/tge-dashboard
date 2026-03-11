@@ -113,7 +113,7 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
                 <td className="px-4 py-2 text-muted-foreground">{t.name}</td>
                 <td className="px-4 py-2">{t.category}</td>
                 <td className={`px-4 py-2 text-right ${t.fdv_change >= 0 ? "text-green" : "text-red"}`}>
-                  {t.fdv_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(t.fdv_change).toFixed(2)}%
+                  {t.fdv_change >= 0 ? "\u25B2 +" : "\u25BC -"}{Math.abs(t.fdv_change).toFixed(2)}%
                 </td>
               </tr>
             ))}

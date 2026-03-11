@@ -118,10 +118,10 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
                   {row.count}{row.count <= 2 ? <span className="text-muted-foreground ml-1 text-xs">(insufficient data)</span> : null}
                 </TableCell>
                 <TableCell className={`text-right ${row.count <= 2 ? "text-muted-foreground" : row.median_change >= 0 ? "text-green" : "text-red"}`}>
-                  {row.count <= 2 ? "\u2014" : <>{row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%</>}
+                  {row.count <= 2 ? "\u2014" : <>{row.median_change >= 0 ? "\u25B2 +" : "\u25BC -"}{Math.abs(row.median_change).toFixed(2)}%</>}
                 </TableCell>
                 <TableCell className={`text-right ${row.count <= 2 ? "text-muted-foreground" : row.avg_change >= 0 ? "text-green" : "text-red"}`}>
-                  {row.count <= 2 ? "\u2014" : <>{row.avg_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.avg_change).toFixed(2)}%</>}
+                  {row.count <= 2 ? "\u2014" : <>{row.avg_change >= 0 ? "\u25B2 +" : "\u25BC -"}{Math.abs(row.avg_change).toFixed(2)}%</>}
                 </TableCell>
                 <TableCell className="text-right">{row.pct_green.toFixed(1)}%</TableCell>
                 <TableCell className="text-right text-muted-foreground">
