@@ -1,21 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
-import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts"
+import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts"
 import type { TGEToken } from "@/lib/types"
 import { getAnalyticsTokens } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
 import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { ChartContainer } from "@/components/shared/chart-container"
 
 interface TimelineChartProps {
   readonly tokens: readonly TGEToken[]
 }
 
 export function TimelineChart({ tokens }: TimelineChartProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const timelineData = useMemo(() => {
     return getAnalyticsTokens(tokens)
       .filter((t) => t.tge_date != null && t.fdv_change_pct != null)
@@ -48,51 +46,47 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
         <p className="text-sm text-muted-foreground mb-4">
           {timelineData.length} of {tokens.filter(t => t.status === "launched").length} launched tokens have TGE dates
         </p>
-        <div className="h-96 w-full">
-          {mounted && (
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-                <XAxis
-                  dataKey="timestamp"
-                  name="TGE Date"
-                  stroke={CHART_THEME.axis}
-                  fontSize={11}
-                  tickFormatter={(ts: number) => {
-                    const d = new Date(ts)
-                    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                  }}
-                  type="number"
-                  domain={["dataMin", "dataMax"]}
-                />
-                <YAxis
-                  dataKey="fdv_change"
-                  name="FDV Change"
-                  stroke={CHART_THEME.axis}
-                  fontSize={12}
-                  tickFormatter={(v: number) => `${v}%`}
-                />
-                <Tooltip
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                  formatter={((value, name) => {
-                    if (name === "TGE Date") {
-                      return [new Date(value as number).toLocaleDateString(), name] as [string, string]
-                    }
-                    return [`${(value as number).toFixed(2)}%`, "FDV Change"] as [string, string]
-                  })}
-                  labelFormatter={((_label, payload) => {
-                    const items = payload as unknown as Array<{ payload?: { ticker?: string } }>
-                    const item = items?.[0]?.payload
-                    return item?.ticker ?? ""
-                  })}
-                />
-                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-                <Scatter data={positiveData} fill={CHART_THEME.green} fillOpacity={0.7} />
-                <Scatter data={negativeData} fill={CHART_THEME.red} fillOpacity={0.7} />
-              </ScatterChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        <ChartContainer height="h-96">
+          <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <XAxis
+              dataKey="timestamp"
+              name="TGE Date"
+              stroke={CHART_THEME.axis}
+              fontSize={11}
+              tickFormatter={(ts: number) => {
+                const d = new Date(ts)
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              }}
+              type="number"
+              domain={["dataMin", "dataMax"]}
+            />
+            <YAxis
+              dataKey="fdv_change"
+              name="FDV Change"
+              stroke={CHART_THEME.axis}
+              fontSize={12}
+              tickFormatter={(v: number) => `${v}%`}
+            />
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              formatter={((value, name) => {
+                if (name === "TGE Date") {
+                  return [new Date(value as number).toLocaleDateString(), name] as [string, string]
+                }
+                return [`${(value as number).toFixed(2)}%`, "FDV Change"] as [string, string]
+              })}
+              labelFormatter={((_label, payload) => {
+                const items = payload as unknown as Array<{ payload?: { ticker?: string } }>
+                const item = items?.[0]?.payload
+                return item?.ticker ?? ""
+              })}
+            />
+            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <Scatter data={positiveData} fill={CHART_THEME.green} fillOpacity={0.7} />
+            <Scatter data={negativeData} fill={CHART_THEME.red} fillOpacity={0.7} />
+          </ScatterChart>
+        </ChartContainer>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border max-h-96 overflow-y-auto">
@@ -110,7 +104,7 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
           <tbody className="divide-y divide-border">
             {timelineData.map((t) => (
               <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
-                <td className="px-4 py-2 text-muted-foreground">{t.date}</td>
+                <td className="px-4 py-2 text-muted-foreground">{new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
                 <td className="px-4 py-2 text-right text-muted-foreground">
                   {Math.floor((Date.now() - new Date(t.date).getTime()) / (1000 * 60 * 60 * 24))}
                 </td>

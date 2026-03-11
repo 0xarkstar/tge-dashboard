@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
+import { useMemo } from "react"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts"
 import type { TGEToken } from "@/lib/types"
 import { computeMedian, getAnalyticsTokens } from "@/lib/data/compute-stats"
 import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { ChartContainer } from "@/components/shared/chart-container"
 
 interface HalfComparisonProps {
   readonly tokens: readonly TGEToken[]
@@ -36,7 +37,7 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
     half,
     count: filtered.length,
     median_change: computeMedian(changes) ?? 0,
-    avg_change: Math.round(avgChange * 100) / 100,
+    avg_change: Number(avgChange.toFixed(2)),
     std_dev: computeStdDev(changes),
     green_count: greenCount,
     red_count: filtered.length - greenCount,
@@ -48,9 +49,6 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
 }
 
 export function HalfComparison({ tokens }: HalfComparisonProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const h1Stats = useMemo(() => computeHalfStats(tokens, "H1"), [tokens])
   const h2Stats = useMemo(() => computeHalfStats(tokens, "H2"), [tokens])
 
@@ -65,11 +63,6 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
         metric: "Avg Change",
         H1: h1Stats.avg_change,
         H2: h2Stats.avg_change,
-      },
-      {
-        metric: "% Green",
-        H1: h1Stats.pct_green,
-        H2: h2Stats.pct_green,
       },
     ],
     [h1Stats, h2Stats]
@@ -134,38 +127,41 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
         ))}
       </div>
 
-      <div className="h-80 w-full">
-        {mounted && (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={comparisonData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-              <XAxis
-                dataKey="metric"
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-              />
-              <YAxis
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-                tickFormatter={(v: number) => `${v}%`}
-              />
-              <Tooltip
-                contentStyle={CHART_TOOLTIP_STYLE}
-                formatter={((value) => [`${(value as number).toFixed(2)}%`] as [string])}
-              />
-              <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
-              <Bar dataKey="H1" fill={CHART_THEME.h1} />
-              <Bar dataKey="H2" fill={CHART_THEME.h2} />
-            </BarChart>
-          </ResponsiveContainer>
+      <ChartContainer height="h-80">
+        <BarChart
+          data={comparisonData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+          <XAxis
+            dataKey="metric"
+            stroke={CHART_THEME.axis}
+            fontSize={12}
+          />
+          <YAxis
+            stroke={CHART_THEME.axis}
+            fontSize={12}
+            tickFormatter={(v: number) => `${v}%`}
+          />
+          <Tooltip
+            contentStyle={CHART_TOOLTIP_STYLE}
+            formatter={((value) => [`${(value as number).toFixed(2)}%`] as [string])}
+          />
+          <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
+          <Bar dataKey="H1" fill={CHART_THEME.h1} />
+          <Bar dataKey="H2" fill={CHART_THEME.h2} />
+        </BarChart>
+      </ChartContainer>
+      <div className="mt-4 space-y-1">
+        <p className="text-xs text-muted-foreground italic">
+          * Statistical significance not assessed. Sample sizes (n={h1Stats.count} H1, n={h2Stats.count} H2) may limit comparability.
+        </p>
+        {Math.abs(h1Stats.median_change - h2Stats.median_change) < 5 && (
+          <p className="text-xs text-muted-foreground italic">
+            * Median difference is {Math.abs(h1Stats.median_change - h2Stats.median_change).toFixed(2)} pp — effect size may be negligible relative to within-group variance.
+          </p>
         )}
       </div>
-      <p className="mt-4 text-xs text-muted-foreground italic">
-        * Statistical significance not assessed. Small sample sizes may limit comparability.
-      </p>
     </div>
   )
 }

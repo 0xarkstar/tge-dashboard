@@ -2,6 +2,22 @@ import Link from "next/link"
 import type { TGEToken } from "@/lib/types"
 import { formatPercent, formatNumber, cn } from "@/lib/utils"
 
+const TIER_DISPLAY: Record<string, { label: string; className: string }> = {
+  mega: { label: "Mega", className: "bg-purple-500/15 text-purple-400" },
+  large: { label: "Large", className: "bg-blue-500/15 text-blue-400" },
+  mid: { label: "Mid", className: "bg-amber-500/15 text-amber-400" },
+  small: { label: "Small", className: "bg-zinc-500/15 text-zinc-400" },
+}
+
+function FdvTierBadge({ tier }: { readonly tier: string }) {
+  const display = TIER_DISPLAY[tier] ?? { label: tier, className: "bg-secondary text-secondary-foreground" }
+  return (
+    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", display.className)}>
+      {display.label}
+    </span>
+  )
+}
+
 interface PerformersTableProps {
   readonly tokens: readonly TGEToken[]
   readonly title: string
@@ -23,6 +39,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
               <th className="px-5 py-3 font-medium">Name</th>
               <th className="px-5 py-3 font-medium text-right">FDV Change</th>
               <th className="px-5 py-3 font-medium text-right">Starting FDV</th>
+              <th className="px-5 py-3 font-medium text-center">FDV Tier</th>
             </tr>
           </thead>
           <tbody>
@@ -55,6 +72,9 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                   </td>
                   <td className="px-5 py-3 text-right text-muted-foreground">
                     {formatNumber(token.starting_fdv)}
+                  </td>
+                  <td className="px-5 py-3 text-center">
+                    <FdvTierBadge tier={token.fdv_tier} />
                   </td>
                 </tr>
               )
@@ -89,6 +109,10 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                   <span className="text-muted-foreground">Starting FDV: </span>
                   {formatNumber(token.starting_fdv)}
                 </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-sm">Tier:</span>
+                <FdvTierBadge tier={token.fdv_tier} />
               </div>
             </div>
           )

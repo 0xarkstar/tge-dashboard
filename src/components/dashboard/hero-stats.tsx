@@ -64,6 +64,9 @@ export function HeroStats({ stats }: HeroStatsProps) {
         value={formatNumber(stats.total_vc_raised)}
         subtext={`${stats.vc_data_coverage} tokens with VC data`}
       />
+      <p className="text-xs text-muted-foreground mt-4 text-center col-span-full">
+        Data updates every 2 hours via automated pipeline
+      </p>
     </div>
   )
 }

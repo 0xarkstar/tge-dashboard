@@ -1,130 +1,132 @@
 {
   "total_tokens": 118,
-  "launched_tokens": 117,
-  "green_count": 18,
+  "launched_tokens": 115,
+  "green_count": 16,
   "red_count": 99,
-  "green_pct": 15.4,
-  "median_fdv_change": -71.8,
-  "total_vc_raised": 1118050000,
-  "vc_data_coverage": 19,
+  "green_pct": 13.91,
+  "median_fdv_change": -73.25,
+  "total_vc_raised": 5403245000,
+  "vc_data_coverage": 111,
   "by_category": {
     "Infra": {
       "count": 38,
-      "median_change": -75.955,
-      "avg_change": -43.22,
-      "pct_green": 13.2,
-      "total_vc_raised": 476750000.0
+      "median_change": -75.95,
+      "avg_change": -43.36,
+      "pct_green": 13.16,
+      "total_vc_raised": 1646083000
     },
     "Consumer": {
       "count": 5,
       "median_change": -68.16,
       "avg_change": -28.57,
-      "pct_green": 20.0,
-      "total_vc_raised": 110000000.0
+      "pct_green": 20,
+      "total_vc_raised": 175000000
     },
     "L1": {
       "count": 4,
       "median_change": -67.41,
       "avg_change": -62.8,
-      "pct_green": 0.0,
-      "total_vc_raised": 367000000.0
+      "pct_green": 0,
+      "total_vc_raised": 463950000
     },
     "DeSci": {
       "count": 1,
       "median_change": -93.05,
       "avg_change": -93.05,
-      "pct_green": 0.0,
-      "total_vc_raised": 33000000.0
+      "pct_green": 0,
+      "total_vc_raised": 33000000
     },
     "Gaming": {
-      "count": 9,
-      "median_change": -83.75,
-      "avg_change": 20.62,
-      "pct_green": 22.2,
-      "total_vc_raised": 67000000.0
+      "count": 8,
+      "median_change": -84.56,
+      "avg_change": -44.02,
+      "pct_green": 12.5,
+      "total_vc_raised": 212200000
     },
     "DeFi": {
       "count": 28,
-      "median_change": -56.655,
+      "median_change": -56.66,
       "avg_change": -36.16,
-      "pct_green": 25.0,
-      "total_vc_raised": 8000000.0
+      "pct_green": 25,
+      "total_vc_raised": 2209072000
     },
     "Social": {
       "count": 1,
       "median_change": -91.22,
       "avg_change": -91.22,
-      "pct_green": 0.0,
-      "total_vc_raised": 25500000.0
+      "pct_green": 0,
+      "total_vc_raised": 25500000
     },
     "AI": {
       "count": 21,
       "median_change": -76.29,
       "avg_change": -53.17,
-      "pct_green": 9.5,
-      "total_vc_raised": 10800000.0
+      "pct_green": 9.52,
+      "total_vc_raised": 427200000
     },
     "RWA": {
       "count": 1,
       "median_change": -87.84,
       "avg_change": -87.84,
-      "pct_green": 0.0,
-      "total_vc_raised": 20000000.0
+      "pct_green": 0,
+      "total_vc_raised": 20000000
     },
     "L2": {
       "count": 4,
-      "median_change": -33.345,
+      "median_change": -33.34,
       "avg_change": -41.74,
-      "pct_green": 0.0,
-      "total_vc_raised": 0.0
+      "pct_green": 0,
+      "total_vc_raised": 112500000
     },
     "Perp DEX": {
-      "count": 3,
-      "median_change": -30.76,
-      "avg_change": 213.23,
-      "pct_green": 33.3,
-      "total_vc_raised": 0.0
+      "count": 2,
+      "median_change": -52.44,
+      "avg_change": -52.44,
+      "pct_green": 0,
+      "total_vc_raised": 16750000
     },
     "Stablecoin": {
       "count": 2,
       "median_change": -49.35,
       "avg_change": -49.35,
-      "pct_green": 0.0,
-      "total_vc_raised": 0.0
+      "pct_green": 0,
+      "total_vc_raised": 61990000
     }
   },
   "by_fdv_tier": {
-    "mega": {
-      "range_label": "≥$958M",
-      "count": 28,
-      "median_starting_fdv": 1850000000.0,
-      "median_change": -83.08500000000001,
-      "pct_green": 0.0
-    },
     "large": {
       "range_label": "$500M–$958M",
-      "count": 30,
+      "count": 28,
       "median_starting_fdv": 685882583.5,
-      "median_change": -82.905,
-      "pct_green": 3.3
+      "median_change": -82.91,
+      "pct_green": 0
+    },
+    "mega": {
+      "range_label": "≥$958M",
+      "count": 29,
+      "median_starting_fdv": 1800000000,
+      "median_change": -84.42,
+      "pct_green": 0
     },
     "mid": {
       "range_label": "$210M–$500M",
       "count": 24,
-      "median_starting_fdv": 335000000.0,
-      "median_change": -72.525,
+      "median_starting_fdv": 355000000,
+      "median_change": -72.85,
       "pct_green": 12.5
     },
     "small": {
       "range_label": "<$210M",
-      "count": 35,
-      "median_starting_fdv": 126000000.0,
-      "median_change": -25.88,
-      "pct_green": 40.0
+      "count": 34,
+      "median_starting_fdv": 133000000,
+      "median_change": -30.84,
+      "pct_green": 38.24
     }
   },
   "outliers": [
-    "WLFI"
+    "WLFI",
+    "ASTER",
+    "ESPORTS"
   ],
   "last_updated": "2026-03-11T11:20:36.058981+00:00"
 }

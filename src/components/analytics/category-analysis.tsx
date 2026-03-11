@@ -1,21 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts"
 import type { TGEToken, Category } from "@/lib/types"
 import { computeCategoryStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
 import { CHART_THEME, CATEGORY_COLORS, CATEGORIES, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { ChartContainer } from "@/components/shared/chart-container"
 
 interface CategoryAnalysisProps {
   readonly tokens: readonly TGEToken[]
 }
 
 export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const categoryStats = useMemo(() => computeCategoryStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -53,48 +51,44 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Median FDV Change by Category</h3>
-        <div className="h-80 w-full">
-          {mounted && (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-                <XAxis
-                  dataKey="category"
-                  stroke={CHART_THEME.axis}
-                  fontSize={11}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
+        <ChartContainer height="h-80">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <XAxis
+              dataKey="category"
+              stroke={CHART_THEME.axis}
+              fontSize={11}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis
+              stroke={CHART_THEME.axis}
+              fontSize={12}
+              tickFormatter={(v: number) => `${v}%`}
+            />
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              formatter={((_value, _name, props) => {
+                const v = (props as { payload: { median_change: number } }).payload.median_change
+                return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
+              })}
+            />
+            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <Bar dataKey="median_change">
+              {chartData.map((entry) => (
+                <Cell
+                  key={entry.category}
+                  fill={CATEGORY_COLORS[entry.category as Category] ?? CHART_THEME.axis}
+                  fillOpacity={entry.count < 3 ? 0.4 : 1}
                 />
-                <YAxis
-                  stroke={CHART_THEME.axis}
-                  fontSize={12}
-                  tickFormatter={(v: number) => `${v}%`}
-                />
-                <Tooltip
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                  formatter={((_value, _name, props) => {
-                    const v = (props as { payload: { median_change: number } }).payload.median_change
-                    return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
-                  })}
-                />
-                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-                <Bar dataKey="median_change">
-                  {chartData.map((entry) => (
-                    <Cell
-                      key={entry.category}
-                      fill={CATEGORY_COLORS[entry.category as Category] ?? CHART_THEME.axis}
-                      fillOpacity={entry.count < 3 ? 0.4 : 1}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
         <p className="mt-2 text-xs text-muted-foreground italic">
           * Categories with fewer than 3 tokens shown with reduced opacity — statistics may not be meaningful.
         </p>
@@ -118,13 +112,13 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
               <tr key={row.category} className="hover:bg-secondary/50 transition-colors">
                 <td className="px-4 py-3 font-medium">{row.category}</td>
                 <td className="px-4 py-3 text-right">
-                  {row.count}{row.count === 1 ? <span className="text-muted-foreground ml-1 text-xs">(n=1)</span> : null}
+                  {row.count}{row.count <= 2 ? <span className="text-muted-foreground ml-1 text-xs">(insufficient data)</span> : null}
                 </td>
-                <td className={`px-4 py-3 text-right ${row.median_change >= 0 ? "text-green" : "text-red"}`}>
-                  {row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%
+                <td className={`px-4 py-3 text-right ${row.count <= 2 ? "text-muted-foreground" : row.median_change >= 0 ? "text-green" : "text-red"}`}>
+                  {row.count <= 2 ? "\u2014" : <>{row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%</>}
                 </td>
-                <td className={`px-4 py-3 text-right ${row.avg_change >= 0 ? "text-green" : "text-red"}`}>
-                  {row.avg_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.avg_change).toFixed(2)}%
+                <td className={`px-4 py-3 text-right ${row.count <= 2 ? "text-muted-foreground" : row.avg_change >= 0 ? "text-green" : "text-red"}`}>
+                  {row.count <= 2 ? "\u2014" : <>{row.avg_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.avg_change).toFixed(2)}%</>}
                 </td>
                 <td className="px-4 py-3 text-right">{row.pct_green.toFixed(1)}%</td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
@@ -146,7 +140,7 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">* Analytics exclude outlier tokens (WLFI). Illiquid tokens included but may have unreliable price data.</p>
+      <p className="mt-2 text-xs text-muted-foreground">* Excludes outlier tokens (WLFI, ASTER, ESPORTS). 2 illiquid tokens (ALMANAK, MITO) are included but have unreliable price data due to near-zero trading volume.</p>
 
       <CategoryTokenBreakdown tokens={tokens} />
     </div>

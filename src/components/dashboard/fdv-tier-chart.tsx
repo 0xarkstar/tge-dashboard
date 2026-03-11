@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cell, ReferenceLine } from "recharts"
 import type { DashboardStats } from "@/lib/types"
 import { FDV_TIER_LABELS, CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 import type { FdvTier } from "@/lib/types"
+import { ChartContainer } from "@/components/shared/chart-container"
 
 interface FdvTierChartProps {
   readonly stats: DashboardStats
@@ -32,9 +32,6 @@ function buildChartData(stats: DashboardStats): readonly ChartDataItem[] {
 }
 
 export function FdvTierChart({ stats }: FdvTierChartProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const data = buildChartData(stats)
 
   return (
@@ -42,56 +39,52 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
       <h3 className="mb-4 text-lg font-semibold">
         FDV Tier Comparison
       </h3>
-      <div className="h-[350px] w-full">
-        {mounted && (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <XAxis
-                dataKey="name"
-                tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
-                axisLine={{ stroke: CHART_THEME.grid }}
+      <ChartContainer height="h-[350px]">
+        <BarChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <XAxis
+            dataKey="name"
+            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+            axisLine={{ stroke: CHART_THEME.grid }}
+          />
+          <YAxis
+            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+            axisLine={{ stroke: CHART_THEME.grid }}
+            tickFormatter={(v: number) => `${v}%`}
+          />
+          <Tooltip
+            contentStyle={CHART_TOOLTIP_STYLE}
+            formatter={((value, name, props) => {
+              if (name === "originalChange") {
+                const v = (props as { payload: ChartDataItem }).payload.originalChange
+                return [`${v >= 0 ? "+" : ""}${v.toFixed(1)}%`, "Median FDV Change"] as [string, string]
+              }
+              return [`${(value as number).toFixed(1)}%`, "% Green"] as [string, string]
+            })}
+          />
+          <Legend
+            wrapperStyle={{ color: CHART_THEME.axis }}
+            formatter={(value: string) =>
+              value === "originalChange" ? "Median FDV Change" : "% Green"
+            }
+          />
+          <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+          <Bar dataKey="originalChange">
+            {data.map((entry) => (
+              <Cell
+                key={entry.name}
+                fill={entry.originalChange >= 0 ? CHART_THEME.green : CHART_THEME.red}
               />
-              <YAxis
-                tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
-                axisLine={{ stroke: CHART_THEME.grid }}
-                tickFormatter={(v: number) => `${v}%`}
-              />
-              <Tooltip
-                contentStyle={CHART_TOOLTIP_STYLE}
-                formatter={((value, name, props) => {
-                  if (name === "originalChange") {
-                    const v = (props as { payload: ChartDataItem }).payload.originalChange
-                    return [`${v >= 0 ? "+" : ""}${v.toFixed(1)}%`, "Median FDV Change"] as [string, string]
-                  }
-                  return [`${(value as number).toFixed(1)}%`, "% Green"] as [string, string]
-                })}
-              />
-              <Legend
-                wrapperStyle={{ color: CHART_THEME.axis }}
-                formatter={(value: string) =>
-                  value === "originalChange" ? "Median FDV Change" : "% Green"
-                }
-              />
-              <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-              <Bar dataKey="originalChange">
-                {data.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={entry.originalChange >= 0 ? CHART_THEME.green : CHART_THEME.red}
-                  />
-                ))}
-              </Bar>
-              <Bar
-                dataKey="pct_green"
-                fill={CHART_THEME.green}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+            ))}
+          </Bar>
+          <Bar
+            dataKey="pct_green"
+            fill={CHART_THEME.green}
+          />
+        </BarChart>
+      </ChartContainer>
     </div>
   )
 }

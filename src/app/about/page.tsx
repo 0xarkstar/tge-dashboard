@@ -96,6 +96,32 @@ export default function AboutPage() {
         </div>
       </Section>
 
+      <Section title="Outlier Exclusions">
+        <p>
+          Three tokens are excluded from aggregate statistics (median FDV change,
+          green/red percentages, and tier breakdowns) but remain visible in the
+          full token list and individual detail pages:
+        </p>
+        <ul className="list-inside list-disc space-y-2">
+          <li>
+            <strong>WLFI</strong> — Unique tokenomics that are not representative
+            of a typical TGE structure.
+          </li>
+          <li>
+            <strong>ASTER</strong> — Extreme positive outlier (+744%) that would
+            skew aggregate metrics upward.
+          </li>
+          <li>
+            <strong>ESPORTS</strong> — Extreme positive outlier (+538%) that would
+            skew aggregate metrics upward.
+          </li>
+        </ul>
+        <p>
+          Excluding these ensures that the dashboard statistics reflect the
+          typical TGE experience rather than being distorted by edge cases.
+        </p>
+      </Section>
+
       <Section title="Limitations & Disclaimers">
         <ul className="list-inside list-disc space-y-2">
           <li>

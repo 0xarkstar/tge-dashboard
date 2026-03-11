@@ -59,6 +59,7 @@ export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string
 
     result[category] = {
       count: categoryTokens.length,
+      // ?? 0 maps empty-sample medians/averages to 0; UI should check `count` for sample size context
       median_change: round2(computeMedian(changes) ?? 0),
       avg_change: round2(computeAverage(changes) ?? 0),
       pct_green: categoryTokens.length > 0 ? round2((greenCount / categoryTokens.length) * 100) : 0,
@@ -91,6 +92,7 @@ export function computeTierStats(tokens: readonly TGEToken[]): Record<string, Ti
     result[tier] = {
       range_label: FDV_TIER_LABELS[tier as keyof typeof FDV_TIER_LABELS] ?? tier,
       count: tierTokens.length,
+      // ?? 0 maps empty-sample medians to 0; UI should check `count` for sample size context
       median_starting_fdv: round2(computeMedian(startingFdvs) ?? 0),
       median_change: round2(computeMedian(changes) ?? 0),
       pct_green: tierTokens.length > 0 ? round2((greenCount / tierTokens.length) * 100) : 0,

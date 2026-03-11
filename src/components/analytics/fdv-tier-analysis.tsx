@@ -1,13 +1,14 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts"
 import type { TGEToken, TierStats } from "@/lib/types"
 import { computeTierStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
 import { CHART_THEME, FDV_TIER_LABELS, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 import type { FdvTier } from "@/lib/types"
+import { ChartContainer } from "@/components/shared/chart-container"
 
 const TIER_ORDER = ["small", "mid", "large", "mega"] as const
 
@@ -16,9 +17,6 @@ interface FdvTierAnalysisProps {
 }
 
 export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const tierStats = useMemo(() => computeTierStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -45,41 +43,37 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Median FDV Change by Tier</h3>
-        <div className="h-80 w-full">
-          {mounted && (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-                <XAxis
-                  dataKey="tier"
-                  stroke={CHART_THEME.axis}
-                  fontSize={12}
+        <ChartContainer height="h-80">
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <XAxis
+              dataKey="tier"
+              stroke={CHART_THEME.axis}
+              fontSize={12}
+            />
+            <YAxis
+              stroke={CHART_THEME.axis}
+              fontSize={12}
+              tickFormatter={(v: number) => `${v}%`}
+            />
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              formatter={((_value, _name, props) => {
+                const v = (props as { payload: { median_change: number } }).payload.median_change
+                return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
+              })}
+            />
+            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <Bar dataKey="median_change">
+              {chartData.map((entry) => (
+                <Cell
+                  key={entry.tier}
+                  fill={entry.median_change >= 0 ? CHART_THEME.green : CHART_THEME.red}
                 />
-                <YAxis
-                  stroke={CHART_THEME.axis}
-                  fontSize={12}
-                  tickFormatter={(v: number) => `${v}%`}
-                />
-                <Tooltip
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                  formatter={((_value, _name, props) => {
-                    const v = (props as { payload: { median_change: number } }).payload.median_change
-                    return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
-                  })}
-                />
-                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-                <Bar dataKey="median_change">
-                  {chartData.map((entry) => (
-                    <Cell
-                      key={entry.tier}
-                      fill={entry.median_change >= 0 ? CHART_THEME.green : CHART_THEME.red}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -126,7 +120,7 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">* Analytics exclude outlier tokens (WLFI). Illiquid tokens included but may have unreliable price data.</p>
+      <p className="mt-2 text-xs text-muted-foreground">* Excludes outlier tokens (WLFI, ASTER, ESPORTS). Illiquid tokens included but may have unreliable price data.</p>
 
       <TierTokenBreakdown tokens={tokens} />
     </div>
