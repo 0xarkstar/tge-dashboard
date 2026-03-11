@@ -49,9 +49,9 @@ export const FDV_TIER_LABELS: Record<FdvTier, string> = {
 
 export const DATA_URL = {
   tokens:
-    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/data/data/tokens.json",
+    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/main/data/tokens.json",
   stats:
-    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/data/data/stats.json",
+    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/main/data/stats.json",
 }
 
 export const CHART_THEME = {
