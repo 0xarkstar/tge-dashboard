@@ -33,15 +33,15 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
       <div className="hidden md:block overflow-x-auto">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="px-5">#</TableHead>
-              <TableHead className="px-5">Ticker</TableHead>
-              <TableHead className="px-5">Name</TableHead>
-              <TableHead className="px-5 text-right">FDV Change</TableHead>
-              <TableHead className="px-5 text-right">Starting FDV</TableHead>
-              <TableHead className="px-5 text-center">FDV Tier</TableHead>
+              <TableHead className="px-5 w-[6%]">#</TableHead>
+              <TableHead className="px-5 w-[18%]">Ticker</TableHead>
+              <TableHead className="px-5 w-[26%]">Name</TableHead>
+              <TableHead className="px-5 w-[20%] text-right">FDV Change</TableHead>
+              <TableHead className="px-5 w-[18%] text-right">Starting FDV</TableHead>
+              <TableHead className="px-5 w-[12%] text-center">FDV Tier</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
