@@ -6,7 +6,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceL
 import type { TGEToken } from "@/lib/types"
 import { getAnalyticsTokens } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import { ChartContainer } from "@/components/shared/chart-container"
 
 interface VcRoiChartProps {
@@ -20,6 +20,7 @@ function formatMillions(value: number): string {
 }
 
 export function VcRoiChart({ tokens }: VcRoiChartProps) {
+  const ct = useChartTheme()
   const vcTokens = useMemo(() => {
     return getAnalyticsTokens(tokens)
       .filter((t) => t.vc_total_raised != null && t.vc_total_raised > 0 && t.fdv_change_pct != null)
@@ -92,12 +93,12 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
         </p>
         <ChartContainer height="h-96">
           <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <CartesianGrid strokeDasharray="3 3" stroke={ct.grid} />
             <XAxis
               dataKey="vc_raised"
               name="VC Raised"
               type="number"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
               scale="log"
               domain={xDomain}
@@ -111,24 +112,24 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
                 value: "VC Raised (log scale)",
                 position: "insideBottom",
                 offset: -10,
-                style: { fill: CHART_THEME.axis, fontSize: 12 },
+                style: { fill: ct.axis, fontSize: 12 },
               }}
             />
             <YAxis
               dataKey="fdv_change"
               name="FDV Change"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
               tickFormatter={(v: number) => `${v}%`}
               label={{
                 value: "FDV Change %",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: CHART_THEME.axis, fontSize: 12 },
+                style: { fill: ct.axis, fontSize: 12 },
               }}
             />
             <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
+              contentStyle={chartTooltipStyle(ct)}
               formatter={((value, name) => {
                 if (name === "VC Raised") return [formatMillions(value as number), name] as [string, string]
                 return [`${(value as number).toFixed(2)}%`, "FDV Change"] as [string, string]
@@ -139,10 +140,10 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
                 return item?.ticker ?? ""
               })}
             />
-            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <ReferenceLine y={0} stroke={ct.reference} strokeDasharray="3 3" />
             <Scatter
               data={vcTokens}
-              fill={CHART_THEME.scatter}
+              fill={ct.scatter}
               fillOpacity={0.7}
             />
           </ScatterChart>

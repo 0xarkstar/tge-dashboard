@@ -2,7 +2,8 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ReferenceLine } from "recharts"
 import type { DashboardStats } from "@/lib/types"
-import { CATEGORY_COLORS, CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { CATEGORY_COLORS } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { Category } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
 
@@ -30,6 +31,7 @@ function buildChartData(stats: DashboardStats): readonly ChartDataItem[] {
 }
 
 export function CategoryChart({ stats }: CategoryChartProps) {
+  const ct = useChartTheme()
   const data = buildChartData(stats)
 
   return (
@@ -45,25 +47,25 @@ export function CategoryChart({ stats }: CategoryChartProps) {
         >
           <XAxis
             type="number"
-            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+            tick={{ fill: ct.axis, fontSize: 12 }}
             tickFormatter={(v: number) => `${v}%`}
-            axisLine={{ stroke: CHART_THEME.grid }}
+            axisLine={{ stroke: ct.grid }}
           />
           <YAxis
             type="category"
             dataKey="name"
-            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
-            axisLine={{ stroke: CHART_THEME.grid }}
+            tick={{ fill: ct.axis, fontSize: 12 }}
+            axisLine={{ stroke: ct.grid }}
             width={75}
           />
           <Tooltip
-            contentStyle={CHART_TOOLTIP_STYLE}
+            contentStyle={chartTooltipStyle(ct)}
             formatter={((_value, _name, props) => {
               const v = (props as { payload: ChartDataItem }).payload.originalChange
               return [`${v >= 0 ? "+" : ""}${v.toFixed(1)}%`, "Median Change"] as [string, string]
             })}
           />
-          <ReferenceLine x={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+          <ReferenceLine x={0} stroke={ct.reference} strokeDasharray="3 3" />
           <Bar dataKey="originalChange">
             {data.map((entry) => (
               <Cell key={entry.name} fill={entry.fill} />

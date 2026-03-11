@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import type { TGEToken } from "@/lib/types"
+import { useI18n } from "@/lib/i18n"
 
 function escapeCSV(value: string): string {
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -17,64 +18,44 @@ function formatNumber(value: number | null | undefined): string {
 
 export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }) {
   const [downloaded, setDownloaded] = useState(false)
+  const { t } = useI18n()
 
   function handleDownload() {
     const headers = [
-      "Ticker",
-      "Name",
-      "CoinGecko ID",
-      "Category",
-      "Chain",
-      "Half",
-      "TGE Date",
-      "Starting FDV",
-      "Starting MC",
-      "Current FDV",
-      "Current MC",
-      "Initial Circ Ratio",
-      "Current Price",
-      "FDV Change %",
-      "Volume 24h",
-      "ATH",
-      "ATL",
-      "FDV Tier",
-      "Status",
-      "Performance",
-      "Is Illiquid",
-      "VC Raised",
-      "Lead Investors",
-      "VC Data Source",
-      "Data Source",
-      "Last Updated",
+      "Ticker", "Name", "CoinGecko ID", "Category", "Chain", "Half",
+      "TGE Date", "Starting FDV", "Starting MC", "Current FDV", "Current MC",
+      "Initial Circ Ratio", "Current Price", "FDV Change %", "Volume 24h",
+      "ATH", "ATL", "FDV Tier", "Status", "Performance", "Is Illiquid",
+      "VC Raised", "Lead Investors", "VC Data Source", "Data Source", "Last Updated",
     ]
 
-    const rows = tokens.map((t) => [
-      escapeCSV(t.ticker),
-      escapeCSV(t.name),
-      t.coingecko_id ?? "",
-      escapeCSV(t.category),
-      escapeCSV(t.chain),
-      t.half,
-      t.tge_date ?? "",
-      formatNumber(t.starting_fdv),
-      formatNumber(t.starting_mc),
-      formatNumber(t.current_fdv),
-      formatNumber(t.current_mc),
-      formatNumber(t.initial_circ_ratio),
-      formatNumber(t.current_price),
-      formatNumber(t.fdv_change_pct),
-      formatNumber(t.volume_24h),
-      formatNumber(t.ath),
-      formatNumber(t.atl),
-      t.fdv_tier,
-      t.status,
-      t.performance_status,
-      String(t.is_illiquid),
-      formatNumber(t.vc_total_raised),
-      escapeCSV(t.lead_investors.join("; ")),
-      t.vc_data_source ?? "",
-      t.data_source ?? "",
-      t.last_updated,
+    const rows = tokens.map((tk) => [
+      escapeCSV(tk.ticker),
+      escapeCSV(tk.name),
+      tk.coingecko_id ?? "",
+      escapeCSV(tk.category),
+      escapeCSV(tk.chain),
+      tk.half,
+      tk.tge_date ?? "",
+      formatNumber(tk.starting_fdv),
+      formatNumber(tk.starting_mc),
+      formatNumber(tk.current_fdv),
+      formatNumber(tk.current_mc),
+      formatNumber(tk.initial_circ_ratio),
+      formatNumber(tk.current_price),
+      formatNumber(tk.fdv_change_pct),
+      formatNumber(tk.volume_24h),
+      formatNumber(tk.ath),
+      formatNumber(tk.atl),
+      tk.fdv_tier,
+      tk.status,
+      tk.performance_status,
+      String(tk.is_illiquid),
+      formatNumber(tk.vc_total_raised),
+      escapeCSV(tk.lead_investors.join("; ")),
+      tk.vc_data_source ?? "",
+      tk.data_source ?? "",
+      tk.last_updated,
     ])
 
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
@@ -109,7 +90,7 @@ export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      {downloaded ? "Downloaded!" : "Export CSV"}
+      {downloaded ? t("tokens.downloaded") : t("tokens.exportCsv")}
     </button>
   )
 }

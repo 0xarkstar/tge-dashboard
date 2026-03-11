@@ -6,7 +6,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLin
 import type { TGEToken, Category } from "@/lib/types"
 import { computeCategoryStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, CATEGORY_COLORS, CATEGORIES, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { CATEGORY_COLORS, CATEGORIES } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import { ChartContainer } from "@/components/shared/chart-container"
 
 interface CategoryAnalysisProps {
@@ -14,6 +15,7 @@ interface CategoryAnalysisProps {
 }
 
 export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
+  const ct = useChartTheme()
   const categoryStats = useMemo(() => computeCategoryStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -56,33 +58,33 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
             data={chartData}
             margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <CartesianGrid strokeDasharray="3 3" stroke={ct.grid} />
             <XAxis
               dataKey="category"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={11}
               angle={-45}
               textAnchor="end"
               height={60}
             />
             <YAxis
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
+              contentStyle={chartTooltipStyle(ct)}
               formatter={((_value, _name, props) => {
                 const v = (props as { payload: { median_change: number } }).payload.median_change
                 return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
               })}
             />
-            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <ReferenceLine y={0} stroke={ct.reference} strokeDasharray="3 3" />
             <Bar dataKey="median_change">
               {chartData.map((entry) => (
                 <Cell
                   key={entry.category}
-                  fill={CATEGORY_COLORS[entry.category as Category] ?? CHART_THEME.axis}
+                  fill={CATEGORY_COLORS[entry.category as Category] ?? ct.axis}
                   fillOpacity={entry.count < 3 ? 0.4 : 1}
                 />
               ))}

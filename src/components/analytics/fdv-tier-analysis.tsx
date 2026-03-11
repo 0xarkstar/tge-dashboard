@@ -6,7 +6,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLin
 import type { TGEToken, TierStats } from "@/lib/types"
 import { computeTierStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, FDV_TIER_LABELS, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { FDV_TIER_LABELS } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { FdvTier } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
 
@@ -17,6 +18,7 @@ interface FdvTierAnalysisProps {
 }
 
 export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
+  const ct = useChartTheme()
   const tierStats = useMemo(() => computeTierStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -45,30 +47,30 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
         <h3 className="text-lg font-semibold mb-4">Median FDV Change by Tier</h3>
         <ChartContainer height="h-80">
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <CartesianGrid strokeDasharray="3 3" stroke={ct.grid} />
             <XAxis
               dataKey="tier"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
             />
             <YAxis
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
+              contentStyle={chartTooltipStyle(ct)}
               formatter={((_value, _name, props) => {
                 const v = (props as { payload: { median_change: number } }).payload.median_change
                 return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
               })}
             />
-            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+            <ReferenceLine y={0} stroke={ct.reference} strokeDasharray="3 3" />
             <Bar dataKey="median_change">
               {chartData.map((entry) => (
                 <Cell
                   key={entry.tier}
-                  fill={entry.median_change >= 0 ? CHART_THEME.green : CHART_THEME.red}
+                  fill={entry.median_change >= 0 ? ct.green : ct.red}
                 />
               ))}
             </Bar>
@@ -128,6 +130,7 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
 }
 
 function TierTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken[] }) {
+  const ct = useChartTheme()
   const [expanded, setExpanded] = useState<string | null>(null)
   const analyticsTokens = useMemo(() => getAnalyticsTokens(tokens), [tokens])
 
@@ -143,10 +146,10 @@ function TierTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken[] }
   }, [analyticsTokens])
 
   const tierColors: Record<string, string> = {
-    small: CHART_THEME.scatter,
-    mid: CHART_THEME.axis,
-    large: CHART_THEME.h2,
-    mega: CHART_THEME.red,
+    small: ct.scatter,
+    mid: ct.axis,
+    large: ct.h2,
+    mega: ct.red,
   }
 
   return (

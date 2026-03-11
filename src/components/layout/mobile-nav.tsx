@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { X } from "lucide-react"
 import { useEffect, useCallback } from "react"
+import { ThemeToggle } from "@/components/shared/theme-toggle"
+import { LanguageSelector } from "@/components/shared/language-selector"
 
 interface NavLink {
   readonly href: string
@@ -74,6 +76,11 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
               {link.label}
             </Link>
           ))}
+        </div>
+
+        <div className="mt-8 flex items-center gap-3 border-t border-border pt-6">
+          <LanguageSelector />
+          <ThemeToggle />
         </div>
       </nav>
     </div>

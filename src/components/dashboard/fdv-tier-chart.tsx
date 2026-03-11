@@ -2,7 +2,8 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cell, ReferenceLine } from "recharts"
 import type { DashboardStats } from "@/lib/types"
-import { FDV_TIER_LABELS, CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { FDV_TIER_LABELS } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { FdvTier } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
 
@@ -32,6 +33,7 @@ function buildChartData(stats: DashboardStats): readonly ChartDataItem[] {
 }
 
 export function FdvTierChart({ stats }: FdvTierChartProps) {
+  const ct = useChartTheme()
   const data = buildChartData(stats)
 
   return (
@@ -46,16 +48,16 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
         >
           <XAxis
             dataKey="name"
-            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
-            axisLine={{ stroke: CHART_THEME.grid }}
+            tick={{ fill: ct.axis, fontSize: 12 }}
+            axisLine={{ stroke: ct.grid }}
           />
           <YAxis
-            tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
-            axisLine={{ stroke: CHART_THEME.grid }}
+            tick={{ fill: ct.axis, fontSize: 12 }}
+            axisLine={{ stroke: ct.grid }}
             tickFormatter={(v: number) => `${v}%`}
           />
           <Tooltip
-            contentStyle={CHART_TOOLTIP_STYLE}
+            contentStyle={chartTooltipStyle(ct)}
             formatter={((value, name, props) => {
               if (name === "originalChange") {
                 const v = (props as { payload: ChartDataItem }).payload.originalChange
@@ -65,23 +67,23 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
             })}
           />
           <Legend
-            wrapperStyle={{ color: CHART_THEME.axis }}
+            wrapperStyle={{ color: ct.axis }}
             formatter={(value: string) =>
               value === "originalChange" ? "Median FDV Change" : "% Green"
             }
           />
-          <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+          <ReferenceLine y={0} stroke={ct.reference} strokeDasharray="3 3" />
           <Bar dataKey="originalChange">
             {data.map((entry) => (
               <Cell
                 key={entry.name}
-                fill={entry.originalChange >= 0 ? CHART_THEME.green : CHART_THEME.red}
+                fill={entry.originalChange >= 0 ? ct.green : ct.red}
               />
             ))}
           </Bar>
           <Bar
             dataKey="pct_green"
-            fill={CHART_THEME.green}
+            fill={ct.green}
           />
         </BarChart>
       </ChartContainer>

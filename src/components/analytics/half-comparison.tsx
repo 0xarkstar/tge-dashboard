@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts"
 import type { TGEToken } from "@/lib/types"
 import { computeMedian, getAnalyticsTokens } from "@/lib/data/compute-stats"
-import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import { ChartContainer } from "@/components/shared/chart-container"
 
 interface HalfComparisonProps {
@@ -49,6 +49,7 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
 }
 
 export function HalfComparison({ tokens }: HalfComparisonProps) {
+  const ct = useChartTheme()
   const h1Stats = useMemo(() => computeHalfStats(tokens, "H1"), [tokens])
   const h2Stats = useMemo(() => computeHalfStats(tokens, "H2"), [tokens])
 
@@ -132,24 +133,24 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
           data={comparisonData}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+          <CartesianGrid strokeDasharray="3 3" stroke={ct.grid} />
           <XAxis
             dataKey="metric"
-            stroke={CHART_THEME.axis}
+            stroke={ct.axis}
             fontSize={12}
           />
           <YAxis
-            stroke={CHART_THEME.axis}
+            stroke={ct.axis}
             fontSize={12}
             tickFormatter={(v: number) => `${v}%`}
           />
           <Tooltip
-            contentStyle={CHART_TOOLTIP_STYLE}
+            contentStyle={chartTooltipStyle(ct)}
             formatter={((value) => [`${(value as number).toFixed(2)}%`] as [string])}
           />
-          <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
-          <Bar dataKey="H1" fill={CHART_THEME.h1} />
-          <Bar dataKey="H2" fill={CHART_THEME.h2} />
+          <Legend wrapperStyle={{ color: ct.axis }} />
+          <Bar dataKey="H1" fill={ct.h1} />
+          <Bar dataKey="H2" fill={ct.h2} />
         </BarChart>
       </ChartContainer>
       <div className="mt-4 space-y-1">

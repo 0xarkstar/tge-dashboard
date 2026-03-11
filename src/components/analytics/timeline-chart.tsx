@@ -6,7 +6,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceL
 import type { TGEToken } from "@/lib/types"
 import { getAnalyticsTokens } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
+import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import { ChartContainer } from "@/components/shared/chart-container"
 
 interface TimelineChartProps {
@@ -14,6 +14,7 @@ interface TimelineChartProps {
 }
 
 export function TimelineChart({ tokens }: TimelineChartProps) {
+  const ct = useChartTheme()
   const timelineData = useMemo(() => {
     return getAnalyticsTokens(tokens)
       .filter((t) => t.tge_date != null && t.fdv_change_pct != null)
@@ -48,11 +49,11 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
         </p>
         <ChartContainer height="h-96">
           <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+            <CartesianGrid strokeDasharray="3 3" stroke={ct.grid} />
             <XAxis
               dataKey="timestamp"
               name="TGE Date"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={11}
               tickFormatter={(ts: number) => {
                 const d = new Date(ts)
@@ -64,12 +65,12 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
             <YAxis
               dataKey="fdv_change"
               name="FDV Change"
-              stroke={CHART_THEME.axis}
+              stroke={ct.axis}
               fontSize={12}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
+              contentStyle={chartTooltipStyle(ct)}
               formatter={((value, name) => {
                 if (name === "TGE Date") {
                   return [new Date(value as number).toLocaleDateString(), name] as [string, string]
@@ -82,9 +83,9 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
                 return item?.ticker ?? ""
               })}
             />
-            <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-            <Scatter data={positiveData} fill={CHART_THEME.green} fillOpacity={0.7} />
-            <Scatter data={negativeData} fill={CHART_THEME.red} fillOpacity={0.7} />
+            <ReferenceLine y={0} stroke={ct.reference} strokeDasharray="3 3" />
+            <Scatter data={positiveData} fill={ct.green} fillOpacity={0.7} />
+            <Scatter data={negativeData} fill={ct.red} fillOpacity={0.7} />
           </ScatterChart>
         </ChartContainer>
       </div>

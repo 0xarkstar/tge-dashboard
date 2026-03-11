@@ -1,6 +1,7 @@
 "use client"
 
 import { Category, FdvTier } from "@/lib/types"
+import { useI18n } from "@/lib/i18n"
 
 const CATEGORIES = Category.options
 const TIERS = FdvTier.options
@@ -27,6 +28,8 @@ export function TableFilters({
   halfFilter,
   onHalfFilterChange,
 }: TableFiltersProps) {
+  const { t } = useI18n()
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative w-full sm:w-64">
@@ -34,7 +37,7 @@ export function TableFilters({
         <input
           id="search-filter"
           type="text"
-          placeholder="Search ticker or name..."
+          placeholder={t("tokens.search")}
           value={globalFilter}
           onChange={(e) => onGlobalFilterChange(e.target.value)}
           className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full pr-8"
@@ -57,7 +60,7 @@ export function TableFilters({
         onChange={(e) => onCategoryFilterChange(e.target.value)}
         className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        <option value="">All Categories</option>
+        <option value="">{t("tokens.allCategories")}</option>
         {CATEGORIES.map((cat) => (
           <option key={cat} value={cat}>
             {cat}
@@ -72,7 +75,7 @@ export function TableFilters({
         onChange={(e) => onTierFilterChange(e.target.value)}
         className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        <option value="">All Tiers</option>
+        <option value="">{t("tokens.allTiers")}</option>
         {TIERS.map((tier) => (
           <option key={tier} value={tier}>
             {tier.charAt(0).toUpperCase() + tier.slice(1)}
@@ -87,7 +90,7 @@ export function TableFilters({
         onChange={(e) => onHalfFilterChange(e.target.value)}
         className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        <option value="">All Halves</option>
+        <option value="">{t("tokens.allHalves")}</option>
         {HALVES.map((half) => (
           <option key={half} value={half}>
             {half}

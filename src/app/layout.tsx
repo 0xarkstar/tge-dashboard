@@ -5,6 +5,8 @@ import path from "path";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ThemeProvider } from "@/components/shared/theme-provider";
+import { I18nProvider } from "@/components/shared/i18n-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -51,13 +53,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased flex min-h-screen flex-col`}>
-        <SiteHeader />
-        <main className="flex-1">
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </main>
-        <SiteFooter lastUpdated={getLastUpdated()} />
+        <ThemeProvider>
+          <I18nProvider>
+            <SiteHeader />
+            <main className="flex-1">
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
+            <SiteFooter lastUpdated={getLastUpdated()} />
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
