@@ -1,8 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import Link from "next/link"
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts"
 import type { TGEToken } from "@/lib/types"
+import { getAnalyticsTokens } from "@/lib/data/compute-stats"
+import { formatNumber, formatPercent } from "@/lib/utils"
 import { CHART_THEME } from "@/lib/constants"
 
 interface VcRoiChartProps {
@@ -46,7 +49,7 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
       <div>
         <h3 className="text-lg font-semibold mb-2">VC Raised vs FDV Performance</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          {vcTokens.length} tokens with VC funding data
+          {vcTokens.length} of {tokens.filter(t => t.status === "launched").length} launched tokens have VC funding data
         </p>
         <div className="h-96 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -133,6 +136,62 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
           </tbody>
         </table>
       </div>
+      <NoVcDataTokens tokens={tokens} />
+    </div>
+  )
+}
+
+function NoVcDataTokens({ tokens }: { readonly tokens: readonly TGEToken[] }) {
+  const [showAll, setShowAll] = useState(false)
+  const noVcTokens = useMemo(() => {
+    return getAnalyticsTokens(tokens)
+      .filter((t) => t.vc_total_raised == null || t.vc_total_raised === 0)
+      .sort((a, b) => (b.fdv_change_pct ?? 0) - (a.fdv_change_pct ?? 0))
+  }, [tokens])
+
+  if (noVcTokens.length === 0) return null
+
+  return (
+    <div className="mt-6">
+      <button
+        onClick={() => setShowAll((v) => !v)}
+        className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <span>{showAll ? "▲" : "▼"}</span>
+        <span>{noVcTokens.length} tokens without VC data</span>
+      </button>
+      {showAll && (
+        <div className="mt-3 overflow-x-auto rounded-lg border border-border max-h-96 overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-card border-b border-border sticky top-0">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Ticker</th>
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
+                <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
+                <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Starting FDV</th>
+                <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">FDV Change</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {noVcTokens.map((t) => (
+                <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
+                  <td className="px-4 py-2 font-medium">
+                    <Link href={`/tokens/${t.ticker}`} className="hover:text-primary transition-colors hover:underline">
+                      {t.ticker}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-2 text-muted-foreground">{t.name}</td>
+                  <td className="px-4 py-2">{t.category}</td>
+                  <td className="px-4 py-2 text-right">{formatNumber(t.starting_fdv)}</td>
+                  <td className={`px-4 py-2 text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
+                    {formatPercent(t.fdv_change_pct)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
