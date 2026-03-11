@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import type { TGEToken } from "@/lib/types"
 
 function escapeCSV(value: string): string {
@@ -15,6 +16,8 @@ function formatNumber(value: number | null | undefined): string {
 }
 
 export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }) {
+  const [downloaded, setDownloaded] = useState(false)
+
   function handleDownload() {
     const headers = [
       "Ticker",
@@ -82,6 +85,8 @@ export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }
     link.download = `tge-tokens-${new Date().toISOString().slice(0, 10)}.csv`
     link.click()
     URL.revokeObjectURL(url)
+    setDownloaded(true)
+    setTimeout(() => setDownloaded(false), 2000)
   }
 
   return (
@@ -104,7 +109,7 @@ export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      Export CSV
+      {downloaded ? "Downloaded!" : "Export CSV"}
     </button>
   )
 }

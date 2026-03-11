@@ -28,11 +28,11 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
   useEffect(() => {
     if (open) {
       document.addEventListener("keydown", handleKeyDown)
-      document.body.style.overflow = "hidden"
+      document.body.classList.add("overflow-hidden")
     }
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
-      document.body.style.overflow = ""
+      document.body.classList.remove("overflow-hidden")
     }
   }, [open, handleKeyDown])
 
@@ -51,7 +51,7 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
         aria-label="Close menu"
       />
 
-      <nav className="fixed inset-y-0 right-0 w-3/4 max-w-sm border-l border-border bg-background p-6 shadow-lg">
+      <nav className="fixed inset-y-0 right-0 w-3/4 max-w-sm border-l border-border bg-background p-6 shadow-lg animate-slide-in-right">
         <div className="flex items-center justify-end">
           <button
             type="button"

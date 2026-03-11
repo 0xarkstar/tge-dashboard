@@ -14,7 +14,12 @@ interface StatCardProps {
 
 function StatCard({ label, value, subtext, variant = "default" }: StatCardProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className={cn(
+      "rounded-xl border border-border p-5",
+      variant === "default" && "bg-card",
+      variant === "green" && "bg-green/5 border-green/20",
+      variant === "red" && "bg-red/5 border-red/20",
+    )}>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       <p
         className={cn(

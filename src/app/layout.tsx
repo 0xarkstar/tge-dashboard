@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import fs from "fs";
 import path from "path";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
@@ -31,11 +32,17 @@ export const metadata: Metadata = {
 };
 
 function getLastUpdated(): string {
-  const filePath = path.join(process.cwd(), "data", "tokens.json")
-  const tokens = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Array<{ last_updated: string }>
-  const timestamps = tokens.map(t => new Date(t.last_updated).getTime())
-  const latest = new Date(Math.max(...timestamps))
-  return latest.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  try {
+    const filePath = path.join(process.cwd(), "data", "tokens.json")
+    const tokens = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Array<{ last_updated: string }>
+    const latest = tokens.reduce((max, t) => {
+      const ts = new Date(t.last_updated).getTime()
+      return ts > max ? ts : max
+    }, 0)
+    return new Date(latest).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  } catch {
+    return "Unknown"
+  }
 }
 
 export default function RootLayout({
@@ -47,7 +54,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.variable} antialiased flex min-h-screen flex-col`}>
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
         <SiteFooter lastUpdated={getLastUpdated()} />
       </body>
     </html>

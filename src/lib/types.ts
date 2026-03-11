@@ -29,7 +29,7 @@ export const TGETokenSchema = z.object({
   tge_date: z.string().nullable().optional(),
   starting_fdv: z.number(),
   starting_mc: z.number(),
-  initial_circ_ratio: z.number().nullable().optional(),
+  initial_circ_ratio: z.number().min(0).max(1).nullable().optional(),
   current_fdv: z.number().nullable().optional(),
   current_mc: z.number().nullable().optional(),
   volume_24h: z.number().nullable().optional(),

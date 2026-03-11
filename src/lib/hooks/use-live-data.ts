@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import useSWR from "swr"
 import { z } from "zod"
 import type { TGEToken, DashboardStats } from "@/lib/types"
@@ -7,6 +8,8 @@ import { TGETokenSchema } from "@/lib/types"
 import { DATA_URL as URLS } from "@/lib/constants"
 import { computeDashboardStats } from "@/lib/data/compute-stats"
 import staticTokens from "../../../data/tokens.json"
+
+const validatedStaticTokens = z.array(TGETokenSchema).parse(staticTokens)
 
 const LIVE_URL = URLS.tokens
 const FALLBACK_URL = "/data/tokens.json"
@@ -26,7 +29,7 @@ async function fetcher(url: string): Promise<TGEToken[]> {
         const raw: unknown = await res.json()
         return z.array(TGETokenSchema).parse(raw)
       } catch {
-        return staticTokens as TGEToken[]
+        return validatedStaticTokens
       }
     }
     throw err instanceof Error ? err : new Error("Failed to fetch token data")
@@ -42,16 +45,22 @@ export function useLiveTokens(): {
 } {
   const { data, error, isLoading } = useSWR<TGEToken[]>(LIVE_URL, fetcher, {
     refreshInterval: REFRESH_INTERVAL,
-    fallbackData: staticTokens as TGEToken[],
+    fallbackData: validatedStaticTokens,
     revalidateOnFocus: false,
     dedupingInterval: 60_000,
   })
 
-  const tokens = data ?? (staticTokens as TGEToken[])
-  const stats = computeDashboardStats(tokens)
-  const lastUpdated = tokens.length > 0
-    ? new Date(Math.max(...tokens.map(t => new Date(t.last_updated).getTime()))).toISOString()
-    : undefined
+  const tokens = data ?? validatedStaticTokens
+  const stats = useMemo(() => computeDashboardStats(tokens), [tokens])
+  const lastUpdated = useMemo(() => {
+    if (tokens.length === 0) return undefined
+    return new Date(
+      tokens.reduce((max, t) => {
+        const ts = new Date(t.last_updated).getTime()
+        return ts > max ? ts : max
+      }, 0)
+    ).toISOString()
+  }, [tokens])
 
   return { tokens, stats, isLoading, error, lastUpdated }
 }

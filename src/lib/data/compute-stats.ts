@@ -26,13 +26,13 @@ export function computeMedian(values: readonly number[]): number | null {
   return sorted[mid]
 }
 
-function computeAverage(values: readonly number[]): number {
-  if (values.length === 0) return 0
+function computeAverage(values: readonly number[]): number | null {
+  if (values.length === 0) return null
   return values.reduce((sum, v) => sum + v, 0) / values.length
 }
 
 function round2(n: number): number {
-  return Math.round(n * 100) / 100
+  return Number(n.toFixed(2))
 }
 
 export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string, CategoryStats> {
@@ -60,8 +60,8 @@ export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string
     result[category] = {
       count: categoryTokens.length,
       median_change: round2(computeMedian(changes) ?? 0),
-      avg_change: round2(computeAverage(changes)),
-      pct_green: round2((greenCount / categoryTokens.length) * 100),
+      avg_change: round2(computeAverage(changes) ?? 0),
+      pct_green: categoryTokens.length > 0 ? round2((greenCount / categoryTokens.length) * 100) : 0,
       total_vc_raised: vcRaised.reduce((sum, v) => sum + v, 0),
     }
   }
@@ -93,7 +93,7 @@ export function computeTierStats(tokens: readonly TGEToken[]): Record<string, Ti
       count: tierTokens.length,
       median_starting_fdv: round2(computeMedian(startingFdvs) ?? 0),
       median_change: round2(computeMedian(changes) ?? 0),
-      pct_green: round2((greenCount / tierTokens.length) * 100),
+      pct_green: tierTokens.length > 0 ? round2((greenCount / tierTokens.length) * 100) : 0,
     }
   }
 

@@ -32,7 +32,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
               return (
                 <tr
                   key={token.ticker}
-                  className="border-b border-border/50 last:border-b-0"
+                  className="border-b border-border/50 last:border-b-0 hover:bg-secondary/50 transition-colors"
                 >
                   <td className="px-5 py-3 text-muted-foreground">
                     {index + 1}

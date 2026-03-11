@@ -1,18 +1,21 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from "recharts"
 import type { TGEToken, Category } from "@/lib/types"
 import { computeCategoryStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, CATEGORY_COLORS, CATEGORIES } from "@/lib/constants"
+import { CHART_THEME, CATEGORY_COLORS, CATEGORIES, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 
 interface CategoryAnalysisProps {
   readonly tokens: readonly TGEToken[]
 }
 
 export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const categoryStats = useMemo(() => computeCategoryStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -23,7 +26,6 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
         const volumes = catTokens.map((t) => t.volume_24h).filter((v): v is number => v != null)
         return {
           category,
-          absChange: Math.abs(stats.median_change),
           median_change: stats.median_change,
           avg_change: stats.avg_change,
           count: stats.count,
@@ -37,7 +39,6 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
       const existing = computed.find((d) => d.category === cat)
       return existing ?? {
         category: cat,
-        absChange: 0,
         median_change: 0,
         avg_change: 0,
         count: 0,
@@ -45,7 +46,7 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
         total_vc_raised: 0,
         median_volume: 0,
       }
-    }).sort((a, b) => b.median_change - a.median_change)
+    }).filter((d) => d.count > 0).sort((a, b) => b.median_change - a.median_change)
   }, [categoryStats, tokens])
 
   return (
@@ -53,48 +54,50 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
       <div>
         <h3 className="text-lg font-semibold mb-4">Median FDV Change by Category</h3>
         <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-              <XAxis
-                dataKey="category"
-                stroke={CHART_THEME.axis}
-                fontSize={11}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-                tickFormatter={(v: number) => `${v}%`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: CHART_THEME.tooltipBg,
-                  border: `1px solid ${CHART_THEME.tooltipBorder}`,
-                  borderRadius: "8px",
-                  color: CHART_THEME.tooltipText,
-                }}
-                formatter={((_value: number, _name: string, props: { payload: { median_change: number } }) => {
-                  const v = props.payload.median_change
-                  return [`${v.toFixed(2)}%`, "Median Change"]
-                }) as never}
-              />
-              <Bar dataKey="absChange">
-                {chartData.map((entry) => (
-                  <Cell
-                    key={entry.category}
-                    fill={CATEGORY_COLORS[entry.category as Category] ?? CHART_THEME.axis}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+                <XAxis
+                  dataKey="category"
+                  stroke={CHART_THEME.axis}
+                  fontSize={11}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis
+                  stroke={CHART_THEME.axis}
+                  fontSize={12}
+                  tickFormatter={(v: number) => `${v}%`}
+                />
+                <Tooltip
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  formatter={((_value, _name, props) => {
+                    const v = (props as { payload: { median_change: number } }).payload.median_change
+                    return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
+                  })}
+                />
+                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+                <Bar dataKey="median_change">
+                  {chartData.map((entry) => (
+                    <Cell
+                      key={entry.category}
+                      fill={CATEGORY_COLORS[entry.category as Category] ?? CHART_THEME.axis}
+                      fillOpacity={entry.count < 3 ? 0.4 : 1}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
+        <p className="mt-2 text-xs text-muted-foreground italic">
+          * Categories with fewer than 3 tokens shown with reduced opacity — statistics may not be meaningful.
+        </p>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -129,14 +132,14 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
                     ? row.median_volume >= 1_000_000
                       ? `$${(row.median_volume / 1_000_000).toFixed(1)}M`
                       : `$${(row.median_volume / 1_000).toFixed(0)}K`
-                    : "—"}
+                    : "\u2014"}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
                   {row.total_vc_raised > 0
                     ? row.total_vc_raised >= 1_000_000_000
                       ? `$${(row.total_vc_raised / 1_000_000_000).toFixed(2)}B`
                       : `$${(row.total_vc_raised / 1_000_000).toFixed(0)}M`
-                    : "—"}
+                    : "\u2014"}
                 </td>
               </tr>
             ))}
@@ -190,7 +193,7 @@ function CategoryTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken
                   <span className="font-medium">{cat}</span>
                   <span className="text-sm text-muted-foreground">({catTokens.length})</span>
                 </div>
-                <span className="text-muted-foreground text-sm">{isOpen ? "▲" : "▼"}</span>
+                <span className="text-muted-foreground text-sm">{isOpen ? "\u25B2" : "\u25BC"}</span>
               </button>
               {isOpen && (
                 <div className="border-t border-border">
@@ -221,7 +224,7 @@ function CategoryTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken
                           </td>
                           <td className="px-4 py-2 text-right text-muted-foreground">
                             {formatNumber(t.volume_24h)}
-                            {t.is_illiquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">⚠</span> : null}
+                            {t.is_illiquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">{"\u26A0"}</span> : null}
                           </td>
                         </tr>
                       ))}

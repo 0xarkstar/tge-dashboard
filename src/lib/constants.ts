@@ -1,21 +1,8 @@
+import { Category as CategoryEnum } from "./types"
 import type { Category, FdvTier } from "./types"
 
-export const CATEGORIES: readonly Category[] = [
-  "DeFi",
-  "Infra",
-  "AI",
-  "Gaming",
-  "L1",
-  "L2",
-  "Consumer",
-  "Social",
-  "RWA",
-  "DeSci",
-  "Perp DEX",
-  "Stablecoin",
-  "Data",
-  "Other",
-] as const
+/** Derived from Zod enum — single source of truth */
+export const CATEGORIES: readonly Category[] = CategoryEnum.options
 
 export const CATEGORY_COLORS: Record<Category, string> = {
   DeFi: "oklch(0.7 0.15 250)",
@@ -68,7 +55,16 @@ export const CHART_THEME = {
   h2: "oklch(0.7 0.15 310)",
 } as const
 
-export const OUTLIER_TICKERS = ["WLFI"] as const
+/** Tokens excluded from analytics due to extreme outlier status */
+export const OUTLIER_TICKERS = ["WLFI", "ASTER", "ESPORTS"] as const
+
+/** Shared tooltip style for all Recharts charts */
+export const CHART_TOOLTIP_STYLE = {
+  backgroundColor: "oklch(0.178 0 0)",
+  border: "1px solid oklch(0.3 0 0)",
+  borderRadius: "8px",
+  color: "oklch(0.985 0 0)",
+} as const
 
 export const SITE_CONFIG = {
   name: "2025 TGE Performance Dashboard",

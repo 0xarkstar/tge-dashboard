@@ -1,12 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts"
 import type { TGEToken } from "@/lib/types"
 import { getAnalyticsTokens } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME } from "@/lib/constants"
+import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 
 interface VcRoiChartProps {
   readonly tokens: readonly TGEToken[]
@@ -14,27 +14,40 @@ interface VcRoiChartProps {
 
 function formatMillions(value: number): string {
   if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}B`
-  return `$${value.toFixed(0)}M`
+  if (value >= 1) return `$${value.toFixed(0)}M`
+  return `$${(value * 1000).toFixed(0)}K`
 }
 
 export function VcRoiChart({ tokens }: VcRoiChartProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const vcTokens = useMemo(() => {
-    return tokens
-      .filter(
-        (t) =>
-          t.vc_total_raised != null &&
-          t.vc_total_raised > 0 &&
-          t.fdv_change_pct != null &&
-          t.status === "launched"
-      )
+    return getAnalyticsTokens(tokens)
+      .filter((t) => t.vc_total_raised != null && t.vc_total_raised > 0 && t.fdv_change_pct != null)
       .map((t) => ({
         ticker: t.ticker,
         name: t.name,
         vc_raised: (t.vc_total_raised ?? 0) / 1_000_000,
         fdv_change: t.fdv_change_pct ?? 0,
         category: t.category,
+        starting_fdv: t.starting_fdv,
       }))
   }, [tokens])
+
+  const correlation = useMemo(() => {
+    if (vcTokens.length < 3) return null
+    const n = vcTokens.length
+    const sumX = vcTokens.reduce((s, t) => s + t.vc_raised, 0)
+    const sumY = vcTokens.reduce((s, t) => s + t.fdv_change, 0)
+    const sumXY = vcTokens.reduce((s, t) => s + t.vc_raised * t.fdv_change, 0)
+    const sumX2 = vcTokens.reduce((s, t) => s + t.vc_raised * t.vc_raised, 0)
+    const sumY2 = vcTokens.reduce((s, t) => s + t.fdv_change * t.fdv_change, 0)
+    const num = n * sumXY - sumX * sumY
+    const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY))
+    if (den === 0) return null
+    return Number((num / den).toFixed(2))
+  }, [vcTokens])
 
   if (vcTokens.length === 0) {
     return (
@@ -48,63 +61,72 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">VC Raised vs FDV Performance</h3>
+        {correlation != null && (
+          <p className="text-xs text-muted-foreground">
+            Pearson r = {correlation} ({Math.abs(correlation) < 0.3 ? "weak" : Math.abs(correlation) < 0.7 ? "moderate" : "strong"} {correlation >= 0 ? "positive" : "negative"} correlation)
+          </p>
+        )}
         <p className="text-sm text-muted-foreground mb-4">
           {vcTokens.length} of {tokens.filter(t => t.status === "launched").length} launched tokens have VC funding data
         </p>
         <div className="h-96 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-              <XAxis
-                dataKey="vc_raised"
-                name="VC Raised"
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-                tickFormatter={(v: number) => formatMillions(v)}
-                label={{
-                  value: "VC Raised ($M)",
-                  position: "insideBottom",
-                  offset: -10,
-                  style: { fill: CHART_THEME.axis, fontSize: 12 },
-                }}
-              />
-              <YAxis
-                dataKey="fdv_change"
-                name="FDV Change"
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-                tickFormatter={(v: number) => `${v}%`}
-                label={{
-                  value: "FDV Change %",
-                  angle: -90,
-                  position: "insideLeft",
-                  style: { fill: CHART_THEME.axis, fontSize: 12 },
-                }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: CHART_THEME.tooltipBg,
-                  border: `1px solid ${CHART_THEME.tooltipBorder}`,
-                  borderRadius: "8px",
-                  color: CHART_THEME.tooltipText,
-                }}
-                formatter={((value: number, name: string) => {
-                  if (name === "VC Raised") return [formatMillions(value), name]
-                  return [`${value.toFixed(2)}%`, "FDV Change"]
-                }) as never}
-                labelFormatter={((_label: string, payload: Array<{ payload?: { ticker?: string } }>) => {
-                  const item = payload?.[0]?.payload
-                  return item?.ticker ?? ""
-                }) as never}
-              />
-              <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
-              <Scatter
-                data={vcTokens}
-                fill={CHART_THEME.scatter}
-                fillOpacity={0.7}
-              />
-            </ScatterChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+                <XAxis
+                  dataKey="vc_raised"
+                  name="VC Raised"
+                  stroke={CHART_THEME.axis}
+                  fontSize={12}
+                  scale="log"
+                  domain={["auto", "auto"]}
+                  tickFormatter={(v: number) => {
+                    if (v >= 1000) return `$${(v / 1000).toFixed(0)}B`
+                    if (v >= 1) return `$${v.toFixed(0)}M`
+                    return `$${(v * 1000).toFixed(0)}K`
+                  }}
+                  label={{
+                    value: "VC Raised (log scale)",
+                    position: "insideBottom",
+                    offset: -10,
+                    style: { fill: CHART_THEME.axis, fontSize: 12 },
+                  }}
+                />
+                <YAxis
+                  dataKey="fdv_change"
+                  name="FDV Change"
+                  stroke={CHART_THEME.axis}
+                  fontSize={12}
+                  tickFormatter={(v: number) => `${v}%`}
+                  label={{
+                    value: "FDV Change %",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: { fill: CHART_THEME.axis, fontSize: 12 },
+                  }}
+                />
+                <Tooltip
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  formatter={((value, name) => {
+                    if (name === "VC Raised") return [formatMillions(value as number), name] as [string, string]
+                    return [`${(value as number).toFixed(2)}%`, "FDV Change"] as [string, string]
+                  })}
+                  labelFormatter={((_label, payload) => {
+                    const items = payload as unknown as Array<{ payload?: { ticker?: string } }>
+                    const item = items?.[0]?.payload
+                    return item?.ticker ?? ""
+                  })}
+                />
+                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+                <Scatter
+                  data={vcTokens}
+                  fill={CHART_THEME.scatter}
+                  fillOpacity={0.7}
+                />
+              </ScatterChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
@@ -116,23 +138,34 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
               <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Category</th>
               <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">VC Raised</th>
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Starting FDV</th>
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">FDV/VC</th>
               <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">FDV Change</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {[...vcTokens]
               .sort((a, b) => b.vc_raised - a.vc_raised)
-              .map((t) => (
-                <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
-                  <td className="px-4 py-3 font-medium">{t.ticker}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{t.name}</td>
-                  <td className="px-4 py-3">{t.category}</td>
-                  <td className="px-4 py-3 text-right">{formatMillions(t.vc_raised)}</td>
-                  <td className={`px-4 py-3 text-right ${t.fdv_change >= 0 ? "text-green" : "text-red"}`}>
-                    {t.fdv_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(t.fdv_change).toFixed(2)}%
-                  </td>
-                </tr>
-              ))}
+              .map((t) => {
+                const fdvVcMultiple = t.starting_fdv != null && t.vc_raised > 0
+                  ? t.starting_fdv / (t.vc_raised * 1_000_000)
+                  : null
+                return (
+                  <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
+                    <td className="px-4 py-3 font-medium">{t.ticker}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{t.name}</td>
+                    <td className="px-4 py-3">{t.category}</td>
+                    <td className="px-4 py-3 text-right">{formatMillions(t.vc_raised)}</td>
+                    <td className="px-4 py-3 text-right">{formatNumber(t.starting_fdv)}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">
+                      {fdvVcMultiple != null ? `${fdvVcMultiple.toFixed(1)}x` : "\u2014"}
+                    </td>
+                    <td className={`px-4 py-3 text-right ${t.fdv_change >= 0 ? "text-green" : "text-red"}`}>
+                      {t.fdv_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(t.fdv_change).toFixed(2)}%
+                    </td>
+                  </tr>
+                )
+              })}
           </tbody>
         </table>
       </div>
@@ -157,7 +190,7 @@ function NoVcDataTokens({ tokens }: { readonly tokens: readonly TGEToken[] }) {
         onClick={() => setShowAll((v) => !v)}
         className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
-        <span>{showAll ? "▲" : "▼"}</span>
+        <span>{showAll ? "\u25B2" : "\u25BC"}</span>
         <span>{noVcTokens.length} tokens without VC data</span>
       </button>
       {showAll && (

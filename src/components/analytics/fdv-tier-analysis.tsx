@@ -1,12 +1,12 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from "recharts"
 import type { TGEToken, TierStats } from "@/lib/types"
 import { computeTierStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
 import { formatNumber, formatPercent } from "@/lib/utils"
-import { CHART_THEME, FDV_TIER_LABELS } from "@/lib/constants"
+import { CHART_THEME, FDV_TIER_LABELS, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 import type { FdvTier } from "@/lib/types"
 
 const TIER_ORDER = ["small", "mid", "large", "mega"] as const
@@ -16,6 +16,9 @@ interface FdvTierAnalysisProps {
 }
 
 export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const tierStats = useMemo(() => computeTierStats(tokens), [tokens])
 
   const chartData = useMemo(() => {
@@ -28,7 +31,6 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
       return {
         tier: tier.charAt(0).toUpperCase() + tier.slice(1),
         range: stats?.range_label ?? "",
-        absChange: Math.abs(stats?.median_change ?? 0),
         median_change: stats?.median_change ?? 0,
         count: stats?.count ?? 0,
         pct_green: stats?.pct_green ?? 0,
@@ -44,41 +46,39 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
       <div>
         <h3 className="text-lg font-semibold mb-4">Median FDV Change by Tier</h3>
         <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-              <XAxis
-                dataKey="tier"
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-              />
-              <YAxis
-                stroke={CHART_THEME.axis}
-                fontSize={12}
-                tickFormatter={(v: number) => `${v}%`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: CHART_THEME.tooltipBg,
-                  border: `1px solid ${CHART_THEME.tooltipBorder}`,
-                  borderRadius: "8px",
-                  color: CHART_THEME.tooltipText,
-                }}
-                formatter={((_value: number, _name: string, props: { payload: { median_change: number } }) => {
-                  const v = props.payload.median_change
-                  return [`${v.toFixed(2)}%`, "Median Change"]
-                }) as never}
-              />
-              <Bar dataKey="absChange">
-                {chartData.map((entry) => (
-                  <Cell
-                    key={entry.tier}
-                    fill={entry.median_change >= 0 ? CHART_THEME.green : CHART_THEME.red}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+                <XAxis
+                  dataKey="tier"
+                  stroke={CHART_THEME.axis}
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke={CHART_THEME.axis}
+                  fontSize={12}
+                  tickFormatter={(v: number) => `${v}%`}
+                />
+                <Tooltip
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  formatter={((_value, _name, props) => {
+                    const v = (props as { payload: { median_change: number } }).payload.median_change
+                    return [`${v.toFixed(2)}%`, "Median Change"] as [string, string]
+                  })}
+                />
+                <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
+                <Bar dataKey="median_change">
+                  {chartData.map((entry) => (
+                    <Cell
+                      key={entry.tier}
+                      fill={entry.median_change >= 0 ? CHART_THEME.green : CHART_THEME.red}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
@@ -116,10 +116,10 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
                     ? row.median_volume >= 1_000_000
                       ? `$${(row.median_volume / 1_000_000).toFixed(1)}M`
                       : `$${(row.median_volume / 1_000).toFixed(0)}K`
-                    : "—"}
+                    : "\u2014"}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
-                  {row.median_circ_ratio > 0 ? `${(row.median_circ_ratio * 100).toFixed(1)}%` : "—"}
+                  {row.median_circ_ratio > 0 ? `${(row.median_circ_ratio * 100).toFixed(1)}%` : "\u2014"}
                 </td>
               </tr>
             ))}
@@ -181,7 +181,7 @@ function TierTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken[] }
                   <span className="text-sm text-muted-foreground">{label}</span>
                   <span className="text-sm text-muted-foreground">({tierTokens.length})</span>
                 </div>
-                <span className="text-muted-foreground text-sm">{isOpen ? "▲" : "▼"}</span>
+                <span className="text-muted-foreground text-sm">{isOpen ? "\u25B2" : "\u25BC"}</span>
               </button>
               {isOpen && (
                 <div className="border-t border-border">

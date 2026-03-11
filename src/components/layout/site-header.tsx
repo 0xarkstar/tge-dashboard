@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { BarChart3, Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MobileNav } from "./mobile-nav"
@@ -15,6 +16,7 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <>
@@ -30,7 +32,12 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-foreground",
+                  (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href))
+                    ? "text-foreground border-b-2 border-primary pb-0.5"
+                    : "text-muted-foreground"
+                )}
               >
                 {link.label}
               </Link>

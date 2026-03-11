@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { FDV_TIER_LABELS } from "@/lib/constants"
 import tokensData from "../../../data/tokens.json"
 
+const TOKEN_COUNT = tokensData.length
+
 export const metadata: Metadata = {
   title: "About | TGE Dashboard 2025",
   description:
@@ -28,7 +30,7 @@ export default function AboutPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold">About This Dashboard</h1>
       <p className="mt-4 text-muted-foreground">
-        The 2025 TGE Performance Dashboard tracks {tokensData.length} VC-backed token generation
+        The 2025 TGE Performance Dashboard tracks {TOKEN_COUNT} VC-backed token generation
         events (TGEs) that launched in 2025. It provides real-time FDV tracking,
         VC ROI analysis, and category breakdowns to help understand the
         performance landscape of new token launches.

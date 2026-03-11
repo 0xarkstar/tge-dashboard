@@ -1,13 +1,20 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
 import type { TGEToken } from "@/lib/types"
 import { computeMedian, getAnalyticsTokens } from "@/lib/data/compute-stats"
-import { CHART_THEME } from "@/lib/constants"
+import { CHART_THEME, CHART_TOOLTIP_STYLE } from "@/lib/constants"
 
 interface HalfComparisonProps {
   readonly tokens: readonly TGEToken[]
+}
+
+function computeStdDev(values: readonly number[]): number | null {
+  if (values.length < 2) return null
+  const mean = values.reduce((s, v) => s + v, 0) / values.length
+  const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - 1)
+  return Math.sqrt(variance)
 }
 
 function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
@@ -30,6 +37,7 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
     count: filtered.length,
     median_change: computeMedian(changes) ?? 0,
     avg_change: Math.round(avgChange * 100) / 100,
+    std_dev: computeStdDev(changes),
     green_count: greenCount,
     red_count: filtered.length - greenCount,
     pct_green:
@@ -40,6 +48,9 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
 }
 
 export function HalfComparison({ tokens }: HalfComparisonProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const h1Stats = useMemo(() => computeHalfStats(tokens, "H1"), [tokens])
   const h2Stats = useMemo(() => computeHalfStats(tokens, "H2"), [tokens])
 
@@ -105,15 +116,17 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
                 </div>
               </div>
               <div>
-                <div className="text-muted-foreground">Green</div>
-                <div className="text-lg font-semibold text-green">
-                  {stats.green_count}
+                <div className="text-muted-foreground">Std Dev</div>
+                <div className="text-lg font-semibold text-muted-foreground">
+                  {stats.std_dev != null ? `${stats.std_dev.toFixed(2)}%` : "\u2014"}
                 </div>
               </div>
               <div>
-                <div className="text-muted-foreground">Red</div>
-                <div className="text-lg font-semibold text-red">
-                  {stats.red_count}
+                <div className="text-muted-foreground">Green / Red</div>
+                <div className="text-lg font-semibold">
+                  <span className="text-green">{stats.green_count}</span>
+                  {" / "}
+                  <span className="text-red">{stats.red_count}</span>
                 </div>
               </div>
             </div>
@@ -122,37 +135,37 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
       </div>
 
       <div className="h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={comparisonData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
-            <XAxis
-              dataKey="metric"
-              stroke={CHART_THEME.axis}
-              fontSize={12}
-            />
-            <YAxis
-              stroke={CHART_THEME.axis}
-              fontSize={12}
-              tickFormatter={(v: number) => `${v}%`}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: CHART_THEME.tooltipBg,
-                border: `1px solid ${CHART_THEME.tooltipBorder}`,
-                borderRadius: "8px",
-                color: CHART_THEME.tooltipText,
-              }}
-              formatter={((value: number) => [`${value.toFixed(2)}%`]) as never}
-            />
-            <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
-            <Bar dataKey="H1" fill={CHART_THEME.h1} />
-            <Bar dataKey="H2" fill={CHART_THEME.h2} />
-          </BarChart>
-        </ResponsiveContainer>
+        {mounted && (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={comparisonData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
+              <XAxis
+                dataKey="metric"
+                stroke={CHART_THEME.axis}
+                fontSize={12}
+              />
+              <YAxis
+                stroke={CHART_THEME.axis}
+                fontSize={12}
+                tickFormatter={(v: number) => `${v}%`}
+              />
+              <Tooltip
+                contentStyle={CHART_TOOLTIP_STYLE}
+                formatter={((value) => [`${(value as number).toFixed(2)}%`] as [string])}
+              />
+              <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
+              <Bar dataKey="H1" fill={CHART_THEME.h1} />
+              <Bar dataKey="H2" fill={CHART_THEME.h2} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
+      <p className="mt-4 text-xs text-muted-foreground italic">
+        * Statistical significance not assessed. Small sample sizes may limit comparability.
+      </p>
     </div>
   )
 }

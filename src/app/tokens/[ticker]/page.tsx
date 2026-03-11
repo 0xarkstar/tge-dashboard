@@ -101,14 +101,14 @@ export default async function TokenDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Back link */}
-      <Link
-        href="/tokens"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to tokens
-      </Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-foreground transition-colors">Dashboard</Link>
+        <span>/</span>
+        <Link href="/tokens" className="hover:text-foreground transition-colors">Tokens</Link>
+        <span>/</span>
+        <span className="text-foreground font-medium">{token.ticker}</span>
+      </nav>
 
       {/* Header */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -192,32 +192,28 @@ export default async function TokenDetailPage({
               className="text-3xl"
             />
           </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <div>
-              <p className="text-sm text-muted-foreground">All-Time High</p>
-              <p className="mt-1 font-medium">
-                {token.ath != null
-                  ? `$${token.ath.toFixed(token.ath < 1 ? 6 : 2)}`
-                  : "N/A"}
-              </p>
+          {(token.ath != null || token.atl != null || token.current_price != null) && (
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {token.ath != null && (
+                <div>
+                  <p className="text-sm text-muted-foreground">All-Time High</p>
+                  <p className="mt-1 font-medium">${token.ath.toFixed(token.ath < 1 ? 6 : 2)}</p>
+                </div>
+              )}
+              {token.atl != null && (
+                <div>
+                  <p className="text-sm text-muted-foreground">All-Time Low</p>
+                  <p className="mt-1 font-medium">${token.atl.toFixed(token.atl < 1 ? 6 : 2)}</p>
+                </div>
+              )}
+              {token.current_price != null && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Current Price</p>
+                  <p className="mt-1 font-medium">${token.current_price.toFixed(token.current_price < 1 ? 6 : 2)}</p>
+                </div>
+              )}
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">All-Time Low</p>
-              <p className="mt-1 font-medium">
-                {token.atl != null
-                  ? `$${token.atl.toFixed(token.atl < 1 ? 6 : 2)}`
-                  : "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Current Price</p>
-              <p className="mt-1 font-medium">
-                {token.current_price != null
-                  ? `$${token.current_price.toFixed(token.current_price < 1 ? 6 : 2)}`
-                  : "N/A"}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -267,11 +263,11 @@ export default async function TokenDetailPage({
           <StatCard
             title="FDV Tier"
             value={FDV_TIER_LABELS[token.fdv_tier]}
-            subtitle={token.fdv_tier}
+            subtitle={token.fdv_tier.charAt(0).toUpperCase() + token.fdv_tier.slice(1)}
           />
           <StatCard
             title="Status"
-            value={token.status}
+            value={token.status.charAt(0).toUpperCase() + token.status.slice(1)}
           />
           <StatCard
             title="Liquidity"

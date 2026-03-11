@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,26 +14,10 @@ import {
   type SortingState,
 } from "@tanstack/react-table"
 import type { TGEToken } from "@/lib/types"
+import { formatNumber, cn } from "@/lib/utils"
+import { ChangeIndicator } from "@/components/shared/change-indicator"
 import { TableFilters } from "./table-filters"
 import { CSVDownload } from "./csv-download"
-
-function formatUSD(value: number | null | undefined): string {
-  if (value == null) return "—"
-  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`
-  return `$${value.toFixed(0)}`
-}
-
-function ChangeIndicator({ value }: { readonly value: number | null | undefined }) {
-  if (value == null) return <span className="text-muted-foreground">—</span>
-  const isPositive = value >= 0
-  return (
-    <span className={isPositive ? "text-green" : "text-red"}>
-      {isPositive ? "\u25B2" : "\u25BC"} {Math.abs(value).toFixed(2)}%
-    </span>
-  )
-}
 
 const columns: ColumnDef<TGEToken>[] = [
   {
@@ -63,17 +48,17 @@ const columns: ColumnDef<TGEToken>[] = [
   {
     accessorKey: "starting_fdv",
     header: "Starting FDV",
-    cell: ({ getValue }) => formatUSD(getValue<number>()),
+    cell: ({ getValue }) => formatNumber(getValue<number>()),
   },
   {
     accessorKey: "current_fdv",
     header: "Current FDV",
-    cell: ({ getValue }) => formatUSD(getValue<number | null>()),
+    cell: ({ getValue }) => formatNumber(getValue<number | null>()),
   },
   {
     accessorKey: "fdv_change_pct",
     header: "FDV Change %",
-    cell: ({ getValue }) => <ChangeIndicator value={getValue<number | null>()} />,
+    cell: ({ getValue }) => <ChangeIndicator value={getValue<number | null>() ?? null} />,
     sortingFn: "basic",
   },
   {
@@ -84,7 +69,7 @@ const columns: ColumnDef<TGEToken>[] = [
       const isIlliquid = row.original.is_illiquid
       return (
         <span className={isIlliquid ? "text-muted-foreground" : ""}>
-          {formatUSD(volume)}
+          {formatNumber(volume)}
           {isIlliquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">&#9888;</span> : null}
         </span>
       )
@@ -125,6 +110,7 @@ interface TokenTableProps {
 }
 
 export function TokenTable({ tokens }: TokenTableProps) {
+  const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([
     { id: "fdv_change_pct", desc: true },
   ])
@@ -200,7 +186,7 @@ export function TokenTable({ tokens }: TokenTableProps) {
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm tabular-nums">
           <thead className="sticky top-0 z-10 bg-card border-b border-border">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -208,14 +194,19 @@ export function TokenTable({ tokens }: TokenTableProps) {
                   <th
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
+                    scope="col"
+                    aria-sort={
+                      header.column.getIsSorted() === "asc" ? "ascending"
+                      : header.column.getIsSorted() === "desc" ? "descending"
+                      : "none"
+                    }
                     className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors"
                   >
                     <div className="flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {{
-                        asc: " \u25B2",
-                        desc: " \u25BC",
-                      }[header.column.getIsSorted() as string] ?? ""}
+                      {header.column.getIsSorted() === "asc" ? " \u25B2" :
+                       header.column.getIsSorted() === "desc" ? " \u25BC" :
+                       " \u25BD"}
                     </div>
                   </th>
                 ))}
@@ -226,7 +217,8 @@ export function TokenTable({ tokens }: TokenTableProps) {
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className="hover:bg-secondary/50 transition-colors"
+                className="hover:bg-secondary/50 transition-colors cursor-pointer"
+                onClick={() => router.push(`/tokens/${row.original.ticker}`)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-3 whitespace-nowrap">
@@ -264,19 +256,19 @@ export function TokenTable({ tokens }: TokenTableProps) {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">Starting FDV: </span>
-                  {formatUSD(token.starting_fdv)}
+                  {formatNumber(token.starting_fdv)}
                 </div>
                 <div>
                   <span className="text-muted-foreground">Current FDV: </span>
-                  {formatUSD(token.current_fdv)}
+                  {formatNumber(token.current_fdv)}
                 </div>
                 <div>
                   <span className="text-muted-foreground">Change: </span>
-                  <ChangeIndicator value={token.fdv_change_pct} />
+                  <ChangeIndicator value={token.fdv_change_pct ?? null} />
                 </div>
                 <div>
                   <span className="text-muted-foreground">Vol 24h: </span>
-                  {formatUSD(token.volume_24h)}
+                  {formatNumber(token.volume_24h)}
                   {token.is_illiquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">&#9888;</span> : null}
                 </div>
                 <div>
@@ -295,25 +287,72 @@ export function TokenTable({ tokens }: TokenTableProps) {
 
       {/* Pagination */}
       {table.getPageCount() > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Rows per page:</span>
+            <select
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+              className="rounded-md border border-border bg-background px-2 py-1 text-sm"
+            >
+              {[10, 25, 50, 100].map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </select>
+            <span className="text-sm text-muted-foreground">
+              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+              className="rounded-md border border-border px-2 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
+            >
+              First
+            </button>
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
-              Previous
+              Prev
             </button>
+            {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
+              const current = table.getState().pagination.pageIndex
+              const total = table.getPageCount()
+              let start = Math.max(0, current - 2)
+              if (start + 5 > total) start = Math.max(0, total - 5)
+              const pageIdx = start + i
+              if (pageIdx >= total) return null
+              return (
+                <button
+                  key={pageIdx}
+                  onClick={() => table.setPageIndex(pageIdx)}
+                  className={cn(
+                    "rounded-md border px-3 py-1.5 text-sm transition-colors",
+                    pageIdx === current
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border hover:bg-secondary"
+                  )}
+                >
+                  {pageIdx + 1}
+                </button>
+              )
+            })}
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
               Next
+            </button>
+            <button
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+              className="rounded-md border border-border px-2 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
+            >
+              Last
             </button>
           </div>
         </div>

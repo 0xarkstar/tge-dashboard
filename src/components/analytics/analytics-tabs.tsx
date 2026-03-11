@@ -34,7 +34,7 @@ export function AnalyticsTabs({ tabs }: AnalyticsTabsProps) {
           </button>
         ))}
       </div>
-      <div>{activeContent}</div>
+      <div key={activeTab}>{activeContent}</div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { HeroStats } from "@/components/dashboard/hero-stats"
 import { CategoryChart } from "@/components/dashboard/category-chart"
 import { FdvTierChart } from "@/components/dashboard/fdv-tier-chart"
 import { PerformersTable } from "@/components/dashboard/performers-table"
+import { ErrorBanner } from "@/components/shared/error-banner"
 
 function LoadingSkeleton() {
   return (
@@ -45,11 +46,7 @@ export default function Home() {
         </p>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-red/30 bg-red/10 p-4 text-red">
-          Failed to load data: {error.message}
-        </div>
-      )}
+      {error && <ErrorBanner message={`Failed to load data: ${error.message}`} />}
 
       {isLoading && <LoadingSkeleton />}
 
