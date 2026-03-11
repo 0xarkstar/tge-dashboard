@@ -9,6 +9,7 @@ import { formatNumber, formatPercent } from "@/lib/utils"
 import { CATEGORY_COLORS, CATEGORIES } from "@/lib/constants"
 import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import { ChartContainer } from "@/components/shared/chart-container"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 
 interface CategoryAnalysisProps {
   readonly tokens: readonly TGEToken[]
@@ -97,50 +98,50 @@ export function CategoryAnalysis({ tokens }: CategoryAnalysisProps) {
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-card border-b border-border">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Category</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Count</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median Change</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Avg Change</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">% Green</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median Volume</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">VC Raised</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-xs font-medium uppercase tracking-wider">Category</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Count</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median Change</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Avg Change</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">% Green</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median Volume</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">VC Raised</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {chartData.map((row) => (
-              <tr key={row.category} className="hover:bg-secondary/50 transition-colors">
-                <td className="px-4 py-3 font-medium">{row.category}</td>
-                <td className="px-4 py-3 text-right">
+              <TableRow key={row.category}>
+                <TableCell className="font-medium">{row.category}</TableCell>
+                <TableCell className="text-right">
                   {row.count}{row.count <= 2 ? <span className="text-muted-foreground ml-1 text-xs">(insufficient data)</span> : null}
-                </td>
-                <td className={`px-4 py-3 text-right ${row.count <= 2 ? "text-muted-foreground" : row.median_change >= 0 ? "text-green" : "text-red"}`}>
+                </TableCell>
+                <TableCell className={`text-right ${row.count <= 2 ? "text-muted-foreground" : row.median_change >= 0 ? "text-green" : "text-red"}`}>
                   {row.count <= 2 ? "\u2014" : <>{row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%</>}
-                </td>
-                <td className={`px-4 py-3 text-right ${row.count <= 2 ? "text-muted-foreground" : row.avg_change >= 0 ? "text-green" : "text-red"}`}>
+                </TableCell>
+                <TableCell className={`text-right ${row.count <= 2 ? "text-muted-foreground" : row.avg_change >= 0 ? "text-green" : "text-red"}`}>
                   {row.count <= 2 ? "\u2014" : <>{row.avg_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.avg_change).toFixed(2)}%</>}
-                </td>
-                <td className="px-4 py-3 text-right">{row.pct_green.toFixed(1)}%</td>
-                <td className="px-4 py-3 text-right text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-right">{row.pct_green.toFixed(1)}%</TableCell>
+                <TableCell className="text-right text-muted-foreground">
                   {row.median_volume > 0
                     ? row.median_volume >= 1_000_000
                       ? `$${(row.median_volume / 1_000_000).toFixed(1)}M`
                       : `$${(row.median_volume / 1_000).toFixed(0)}K`
                     : "\u2014"}
-                </td>
-                <td className="px-4 py-3 text-right text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
                   {row.total_vc_raised > 0
                     ? row.total_vc_raised >= 1_000_000_000
                       ? `$${(row.total_vc_raised / 1_000_000_000).toFixed(2)}B`
                       : `$${(row.total_vc_raised / 1_000_000).toFixed(0)}M`
                     : "\u2014"}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">* Excludes outlier tokens (WLFI, ASTER, ESPORTS). 2 illiquid tokens (ALMANAK, MITO) are included but have unreliable price data due to near-zero trading volume.</p>
 
@@ -193,39 +194,39 @@ function CategoryTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken
               </button>
               {isOpen && (
                 <div className="border-t border-border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-card">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Ticker</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Starting FDV</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Current FDV</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">FDV Change</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Volume 24h</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-medium uppercase">Ticker</TableHead>
+                        <TableHead className="text-xs font-medium uppercase">Name</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">Starting FDV</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">Current FDV</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">FDV Change</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">Volume 24h</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {catTokens.map((t) => (
-                        <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
-                          <td className="px-4 py-2 font-medium">
+                        <TableRow key={t.ticker}>
+                          <TableCell className="font-medium">
                             <Link href={`/tokens/${t.ticker}`} className="hover:text-primary transition-colors hover:underline">
                               {t.ticker}
                             </Link>
-                          </td>
-                          <td className="px-4 py-2 text-muted-foreground">{t.name}</td>
-                          <td className="px-4 py-2 text-right">{formatNumber(t.starting_fdv)}</td>
-                          <td className="px-4 py-2 text-right">{formatNumber(t.current_fdv)}</td>
-                          <td className={`px-4 py-2 text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{t.name}</TableCell>
+                          <TableCell className="text-right">{formatNumber(t.starting_fdv)}</TableCell>
+                          <TableCell className="text-right">{formatNumber(t.current_fdv)}</TableCell>
+                          <TableCell className={`text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
                             {formatPercent(t.fdv_change_pct)}
-                          </td>
-                          <td className="px-4 py-2 text-right text-muted-foreground">
+                          </TableCell>
+                          <TableCell className="text-right text-muted-foreground">
                             {formatNumber(t.volume_24h)}
                             {t.is_illiquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">{"\u26A0"}</span> : null}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>

@@ -6,6 +6,7 @@ import { CATEGORY_COLORS } from "@/lib/constants"
 import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { Category } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface CategoryChartProps {
   readonly stats: DashboardStats
@@ -35,10 +36,11 @@ export function CategoryChart({ stats }: CategoryChartProps) {
   const data = buildChartData(stats)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <h3 className="mb-4 text-lg font-semibold">
-        Category Performance (Median FDV Change %)
-      </h3>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Category Performance (Median FDV Change %)</CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-5">
       <ChartContainer height="h-[400px]">
         <BarChart
           data={data}
@@ -73,6 +75,7 @@ export function CategoryChart({ stats }: CategoryChartProps) {
           </Bar>
         </BarChart>
       </ChartContainer>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

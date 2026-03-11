@@ -10,6 +10,7 @@ import { FDV_TIER_LABELS } from "@/lib/constants"
 import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { FdvTier } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 
 const TIER_ORDER = ["small", "mid", "large", "mega"] as const
 
@@ -79,48 +80,48 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-card border-b border-border">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Tier</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Range</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Count</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median FDV</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median Change</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">% Green</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median Volume</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Median Circ Ratio</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-xs font-medium uppercase tracking-wider">Tier</TableHead>
+              <TableHead className="text-xs font-medium uppercase tracking-wider">Range</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Count</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median FDV</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median Change</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">% Green</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median Volume</TableHead>
+              <TableHead className="text-right text-xs font-medium uppercase tracking-wider">Median Circ Ratio</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {chartData.map((row) => (
-              <tr key={row.tier} className="hover:bg-secondary/50 transition-colors">
-                <td className="px-4 py-3 font-medium">{row.tier}</td>
-                <td className="px-4 py-3 text-muted-foreground">{row.range}</td>
-                <td className="px-4 py-3 text-right">{row.count}</td>
-                <td className="px-4 py-3 text-right">
+              <TableRow key={row.tier}>
+                <TableCell className="font-medium">{row.tier}</TableCell>
+                <TableCell className="text-muted-foreground">{row.range}</TableCell>
+                <TableCell className="text-right">{row.count}</TableCell>
+                <TableCell className="text-right">
                   {row.median_starting_fdv >= 1_000_000_000
                     ? `$${(row.median_starting_fdv / 1_000_000_000).toFixed(2)}B`
                     : `$${(row.median_starting_fdv / 1_000_000).toFixed(0)}M`}
-                </td>
-                <td className={`px-4 py-3 text-right ${row.median_change >= 0 ? "text-green" : "text-red"}`}>
+                </TableCell>
+                <TableCell className={`text-right ${row.median_change >= 0 ? "text-green" : "text-red"}`}>
                   {row.median_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(row.median_change).toFixed(2)}%
-                </td>
-                <td className="px-4 py-3 text-right">{row.pct_green.toFixed(1)}%</td>
-                <td className="px-4 py-3 text-right text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-right">{row.pct_green.toFixed(1)}%</TableCell>
+                <TableCell className="text-right text-muted-foreground">
                   {row.median_volume > 0
                     ? row.median_volume >= 1_000_000
                       ? `$${(row.median_volume / 1_000_000).toFixed(1)}M`
                       : `$${(row.median_volume / 1_000).toFixed(0)}K`
                     : "\u2014"}
-                </td>
-                <td className="px-4 py-3 text-right text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
                   {row.median_circ_ratio > 0 ? `${(row.median_circ_ratio * 100).toFixed(1)}%` : "\u2014"}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">* Excludes outlier tokens (WLFI, ASTER, ESPORTS). Illiquid tokens included but may have unreliable price data.</p>
 
@@ -182,36 +183,36 @@ function TierTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken[] }
               </button>
               {isOpen && (
                 <div className="border-t border-border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-card">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Ticker</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Starting FDV</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Current FDV</th>
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">FDV Change</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs font-medium uppercase">Ticker</TableHead>
+                        <TableHead className="text-xs font-medium uppercase">Name</TableHead>
+                        <TableHead className="text-xs font-medium uppercase">Category</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">Starting FDV</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">Current FDV</TableHead>
+                        <TableHead className="text-right text-xs font-medium uppercase">FDV Change</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {tierTokens.map((t) => (
-                        <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
-                          <td className="px-4 py-2 font-medium">
+                        <TableRow key={t.ticker}>
+                          <TableCell className="font-medium">
                             <Link href={`/tokens/${t.ticker}`} className="hover:text-primary transition-colors hover:underline">
                               {t.ticker}
                             </Link>
-                          </td>
-                          <td className="px-4 py-2 text-muted-foreground">{t.name}</td>
-                          <td className="px-4 py-2">{t.category}</td>
-                          <td className="px-4 py-2 text-right">{formatNumber(t.starting_fdv)}</td>
-                          <td className="px-4 py-2 text-right">{formatNumber(t.current_fdv)}</td>
-                          <td className={`px-4 py-2 text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{t.name}</TableCell>
+                          <TableCell>{t.category}</TableCell>
+                          <TableCell className="text-right">{formatNumber(t.starting_fdv)}</TableCell>
+                          <TableCell className="text-right">{formatNumber(t.current_fdv)}</TableCell>
+                          <TableCell className={`text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
                             {formatPercent(t.fdv_change_pct)}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>

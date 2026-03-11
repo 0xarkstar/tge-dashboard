@@ -1,6 +1,8 @@
 import Link from "next/link"
 import type { TGEToken } from "@/lib/types"
 import { formatNumber, cn } from "@/lib/utils"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 
 const TIER_DISPLAY: Record<string, { label: string; className: string }> = {
   mega: { label: "Mega", className: "bg-purple-500/15 text-purple-400" },
@@ -12,9 +14,9 @@ const TIER_DISPLAY: Record<string, { label: string; className: string }> = {
 function FdvTierBadge({ tier }: { readonly tier: string }) {
   const display = TIER_DISPLAY[tier] ?? { label: tier, className: "bg-secondary text-secondary-foreground" }
   return (
-    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", display.className)}>
+    <Badge variant="secondary" className={cn(display.className)}>
       {display.label}
-    </span>
+    </Badge>
   )
 }
 
@@ -31,57 +33,56 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-muted-foreground">
-              <th className="px-5 py-3 font-medium">#</th>
-              <th className="px-5 py-3 font-medium">Ticker</th>
-              <th className="px-5 py-3 font-medium">Name</th>
-              <th className="px-5 py-3 font-medium text-right">FDV Change</th>
-              <th className="px-5 py-3 font-medium text-right">Starting FDV</th>
-              <th className="px-5 py-3 font-medium text-center">FDV Tier</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-5">#</TableHead>
+              <TableHead className="px-5">Ticker</TableHead>
+              <TableHead className="px-5">Name</TableHead>
+              <TableHead className="px-5 text-right">FDV Change</TableHead>
+              <TableHead className="px-5 text-right">Starting FDV</TableHead>
+              <TableHead className="px-5 text-center">FDV Tier</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {tokens.map((token, index) => {
               const isGreen = (token.fdv_change_pct ?? 0) >= 0
               const arrow = isGreen ? "▲" : "▼"
               const absChange = token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"
               return (
-                <tr
+                <TableRow
                   key={token.ticker}
-                  className="border-b border-border/50 last:border-b-0 hover:bg-secondary/50 transition-colors"
                 >
-                  <td className="px-5 py-3 text-muted-foreground">
+                  <TableCell className="px-5 text-muted-foreground">
                     {index + 1}
-                  </td>
-                  <td className="px-5 py-3 font-mono font-semibold">
+                  </TableCell>
+                  <TableCell className="px-5 font-mono font-semibold">
                     <Link href={`/tokens/${token.ticker}`} className="hover:text-primary transition-colors hover:underline">
                       {token.ticker}
                     </Link>
-                  </td>
-                  <td className="px-5 py-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="px-5 text-muted-foreground">
                     {token.name}
-                  </td>
-                  <td
+                  </TableCell>
+                  <TableCell
                     className={cn(
-                      "px-5 py-3 text-right font-medium",
+                      "px-5 text-right font-medium",
                       variant === "top" ? "text-green" : "text-red",
                     )}
                   >
                     {arrow} {absChange}
-                  </td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="px-5 text-right text-muted-foreground">
                     {formatNumber(token.starting_fdv)}
-                  </td>
-                  <td className="px-5 py-3 text-center">
+                  </TableCell>
+                  <TableCell className="px-5 text-center">
                     <FdvTierBadge tier={token.fdv_tier} />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Mobile cards */}

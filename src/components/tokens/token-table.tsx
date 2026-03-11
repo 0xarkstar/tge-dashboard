@@ -16,6 +16,10 @@ import {
 import type { TGEToken } from "@/lib/types"
 import { formatNumber, cn } from "@/lib/utils"
 import { ChangeIndicator } from "@/components/shared/change-indicator"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { TableFilters } from "./table-filters"
 import { CSVDownload } from "./csv-download"
 
@@ -40,9 +44,7 @@ const columns: ColumnDef<TGEToken>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ getValue }) => (
-      <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-        {getValue<string>()}
-      </span>
+      <Badge variant="secondary">{getValue<string>()}</Badge>
     ),
   },
   {
@@ -186,12 +188,12 @@ export function TokenTable({ tokens }: TokenTableProps) {
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm tabular-nums">
-          <thead className="sticky top-0 z-10 bg-card border-b border-border">
+        <Table className="tabular-nums">
+          <TableHeader className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th
+                  <TableHead
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
                     scope="col"
@@ -200,7 +202,7 @@ export function TokenTable({ tokens }: TokenTableProps) {
                       : header.column.getIsSorted() === "desc" ? "descending"
                       : "none"
                     }
-                    className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors"
+                    className="text-xs font-medium uppercase tracking-wider cursor-pointer select-none hover:text-foreground transition-colors"
                   >
                     <div className="flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
@@ -208,27 +210,27 @@ export function TokenTable({ tokens }: TokenTableProps) {
                        header.column.getIsSorted() === "desc" ? " \u25BC" :
                        " \u25BD"}
                     </div>
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </thead>
-          <tbody className="divide-y divide-border">
+          </TableHeader>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <tr
+              <TableRow
                 key={row.id}
-                className="hover:bg-secondary/50 transition-colors cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => router.push(`/tokens/${row.original.ticker}`)}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 whitespace-nowrap">
+                  <TableCell key={cell.id} className="whitespace-nowrap">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Mobile cards */}
@@ -249,9 +251,7 @@ export function TokenTable({ tokens }: TokenTableProps) {
                     {token.name}
                   </span>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
-                  {token.category}
-                </span>
+                <Badge variant="secondary">{token.category}</Badge>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
@@ -290,34 +290,37 @@ export function TokenTable({ tokens }: TokenTableProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Rows per page:</span>
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => table.setPageSize(Number(e.target.value))}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm"
-            >
-              {[10, 25, 50, 100].map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
+            <Select value={String(table.getState().pagination.pageSize)} onValueChange={(v) => table.setPageSize(Number(v))}>
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map((size) => (
+                  <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <span className="text-sm text-muted-foreground">
               Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
-              className="rounded-md border border-border px-2 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
               First
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
               Prev
-            </button>
+            </Button>
             {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
               const current = table.getState().pagination.pageIndex
               const total = table.getPageCount()
@@ -326,34 +329,32 @@ export function TokenTable({ tokens }: TokenTableProps) {
               const pageIdx = start + i
               if (pageIdx >= total) return null
               return (
-                <button
+                <Button
                   key={pageIdx}
+                  variant={pageIdx === current ? "default" : "outline"}
+                  size="sm"
                   onClick={() => table.setPageIndex(pageIdx)}
-                  className={cn(
-                    "rounded-md border px-3 py-1.5 text-sm transition-colors",
-                    pageIdx === current
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border hover:bg-secondary"
-                  )}
                 >
                   {pageIdx + 1}
-                </button>
+                </Button>
               )
             })}
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
               Next
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
-              className="rounded-md border border-border px-2 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
             >
               Last
-            </button>
+            </Button>
           </div>
         </div>
       )}

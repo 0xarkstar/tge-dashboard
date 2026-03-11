@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/lib/i18n"
 import type { Locale } from "@/lib/i18n"
+import { Button } from "@/components/ui/button"
 
 const LOCALES: readonly { readonly value: Locale; readonly label: string }[] = [
   { value: "en", label: "EN" },
@@ -12,21 +13,18 @@ export function LanguageSelector() {
   const { locale, setLocale } = useI18n()
 
   return (
-    <div className="inline-flex rounded-md border border-border">
+    <div className="inline-flex">
       {LOCALES.map((l) => (
-        <button
+        <Button
           key={l.value}
-          type="button"
+          variant={locale === l.value ? "default" : "ghost"}
+          size="sm"
           onClick={() => setLocale(l.value)}
-          className={`px-2.5 py-1 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md ${
-            locale === l.value
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-          }`}
+          className="h-7 px-2.5 text-xs rounded-none first:rounded-l-md last:rounded-r-md"
           aria-label={`Switch to ${l.label}`}
         >
           {l.label}
-        </button>
+        </Button>
       ))}
     </div>
   )

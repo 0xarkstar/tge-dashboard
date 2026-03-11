@@ -6,6 +6,7 @@ import { FDV_TIER_LABELS } from "@/lib/constants"
 import { useChartTheme, chartTooltipStyle } from "@/lib/hooks/use-chart-theme"
 import type { FdvTier } from "@/lib/types"
 import { ChartContainer } from "@/components/shared/chart-container"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface FdvTierChartProps {
   readonly stats: DashboardStats
@@ -37,10 +38,11 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
   const data = buildChartData(stats)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <h3 className="mb-4 text-lg font-semibold">
-        FDV Tier Comparison
-      </h3>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">FDV Tier Comparison</CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-5">
       <ChartContainer height="h-[350px]">
         <BarChart
           data={data}
@@ -87,6 +89,7 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
           />
         </BarChart>
       </ChartContainer>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

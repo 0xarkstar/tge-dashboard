@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { X } from "lucide-react"
 import { useEffect, useCallback } from "react"
+import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { LanguageSelector } from "@/components/shared/language-selector"
 
@@ -55,14 +56,9 @@ export function MobileNav({ open, onClose, links }: MobileNavProps) {
 
       <nav className="fixed inset-y-0 right-0 w-3/4 max-w-sm border-l border-border bg-background p-6 shadow-lg animate-slide-in-right">
         <div className="flex items-center justify-end">
-          <button
-            type="button"
-            className="rounded-[var(--radius)] p-2 text-muted-foreground transition-colors hover:text-foreground"
-            onClick={onClose}
-            aria-label="Close menu"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close menu">
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         <div className="mt-6 flex flex-col gap-4">

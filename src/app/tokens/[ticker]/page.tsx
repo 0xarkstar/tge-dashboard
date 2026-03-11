@@ -9,6 +9,8 @@ import { formatNumber, formatPercent, formatDate } from "@/lib/utils"
 import { StatCard } from "@/components/shared/stat-card"
 import { ChangeIndicator } from "@/components/shared/change-indicator"
 import { ShareButton } from "@/components/shared/share-button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { z } from "zod"
 
 function loadTokens(): readonly TGEToken[] {
@@ -38,17 +40,13 @@ export async function generateMetadata({ params }: { params: Promise<{ ticker: s
 
 function CategoryBadge({ category }: { readonly category: string }) {
   return (
-    <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary">
-      {category}
-    </span>
+    <Badge className="bg-primary/15 text-primary hover:bg-primary/25">{category}</Badge>
   )
 }
 
 function ChainBadge({ chain }: { readonly chain: string }) {
   return (
-    <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-      {chain}
-    </span>
+    <Badge variant="secondary">{chain}</Badge>
   )
 }
 
@@ -58,15 +56,9 @@ function StatusBadge({
   readonly status: "green" | "red"
 }) {
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-medium ${
-        status === "green"
-          ? "bg-green/15 text-green"
-          : "bg-red/15 text-red"
-      }`}
-    >
+    <Badge className={status === "green" ? "bg-green/15 text-green hover:bg-green/25" : "bg-red/15 text-red hover:bg-red/25"}>
       {status === "green" ? "Outperforming" : "Underperforming"}
-    </span>
+    </Badge>
   )
 }
 
@@ -120,15 +112,7 @@ export default async function TokenDetailPage({
         <ChainBadge chain={token.chain} />
         <StatusBadge status={token.performance_status} />
         {token.coingecko_id ? (
-          <a
-            href={`https://www.coingecko.com/en/coins/${token.coingecko_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
-          >
-            CoinGecko
-            <ExternalLink className="h-3 w-3" />
-          </a>
+          <a href={`https://www.coingecko.com/en/coins/${token.coingecko_id}`} target="_blank" rel="noopener noreferrer"><Badge variant="secondary" className="gap-1.5 cursor-pointer">CoinGecko<ExternalLink className="h-3 w-3" /></Badge></a>
         ) : null}
       </div>
 
@@ -185,7 +169,7 @@ export default async function TokenDetailPage({
       {/* Performance */}
       <section className="mt-8">
         <h2 className="text-lg font-semibold">Performance</h2>
-        <div className="mt-4 rounded-[var(--radius)] border border-border bg-card p-6">
+        <Card className="mt-4"><CardContent className="p-6">
           <div className="flex items-center gap-4">
             <ChangeIndicator
               value={token.fdv_change_pct ?? null}
@@ -214,7 +198,7 @@ export default async function TokenDetailPage({
               )}
             </div>
           )}
-        </div>
+        </CardContent></Card>
       </section>
 
       {/* VC Info */}
@@ -226,16 +210,18 @@ export default async function TokenDetailPage({
               title="Total Raised"
               value={formatNumber(token.vc_total_raised)}
             />
-            <div className="rounded-[var(--radius)] border border-border bg-card p-6">
-              <p className="text-sm font-medium text-muted-foreground">
-                Lead Investors
-              </p>
-              <p className="mt-2 font-medium">
-                {token.lead_investors.length > 0
-                  ? token.lead_investors.join(", ")
-                  : "N/A"}
-              </p>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Lead Investors
+                </p>
+                <p className="mt-2 font-medium">
+                  {token.lead_investors.length > 0
+                    ? token.lead_investors.join(", ")
+                    : "N/A"}
+                </p>
+              </CardContent>
+            </Card>
             {token.vc_data_source ? (
               <StatCard title="Data Source" value={token.vc_data_source} />
             ) : null}

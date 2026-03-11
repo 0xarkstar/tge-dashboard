@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { type ReactNode } from "react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 interface Tab {
   readonly id: string
@@ -13,28 +14,24 @@ interface AnalyticsTabsProps {
 }
 
 export function AnalyticsTabs({ tabs }: AnalyticsTabsProps) {
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "")
-
-  const activeContent = tabs.find((t) => t.id === activeTab)?.content
-
   return (
-    <div>
-      <div className="flex overflow-x-auto border-b border-border mb-6">
+    <Tabs defaultValue={tabs[0]?.id}>
+      <TabsList className="h-auto w-full justify-start rounded-none border-b border-border bg-transparent p-0">
         {tabs.map((tab) => (
-          <button
+          <TabsTrigger
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.id
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-            }`}
+            value={tab.id}
+            className="rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             {tab.label}
-          </button>
+          </TabsTrigger>
         ))}
-      </div>
-      <div key={activeTab}>{activeContent}</div>
-    </div>
+      </TabsList>
+      {tabs.map((tab) => (
+        <TabsContent key={tab.id} value={tab.id} className="mt-6">
+          {tab.content}
+        </TabsContent>
+      ))}
+    </Tabs>
   )
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { useI18n } from "@/lib/i18n"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { LanguageSelector } from "@/components/shared/language-selector"
+import { Button } from "@/components/ui/button"
 import { MobileNav } from "./mobile-nav"
 import { useState } from "react"
 
@@ -58,14 +59,9 @@ export function SiteHeader() {
               <LanguageSelector />
               <ThemeToggle />
             </div>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-[var(--radius)] p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-            >
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
               <Menu className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </header>

@@ -6,6 +6,7 @@ import { HeroStats } from "@/components/dashboard/hero-stats"
 import { CategoryChart } from "@/components/dashboard/category-chart"
 import { FdvTierChart } from "@/components/dashboard/fdv-tier-chart"
 import { PerformersTable } from "@/components/dashboard/performers-table"
+import { TokenTicker } from "@/components/dashboard/token-ticker"
 import { ErrorBanner } from "@/components/shared/error-banner"
 import { useI18n } from "@/lib/i18n"
 
@@ -50,6 +51,7 @@ export default function Home() {
       {!isLoading && (
         <div className="space-y-6">
           <HeroStats stats={stats} />
+          <TokenTicker tokens={tokens} />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <CategoryChart stats={stats} />
             <FdvTierChart stats={stats} />

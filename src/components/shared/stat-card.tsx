@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface StatCardProps {
   readonly title: string
@@ -16,25 +17,22 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <div
-      className={cn(
-        "rounded-[var(--radius)] border border-border bg-card p-6",
-        className,
-      )}
-    >
-      <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      <p
-        className={cn(
-          "mt-2 text-2xl font-bold tracking-tight",
-          trend === "up" && "text-green",
-          trend === "down" && "text-red",
-        )}
-      >
-        {value}
-      </p>
-      {subtitle ? (
-        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-      ) : null}
-    </div>
+    <Card className={cn(className)}>
+      <CardContent className="p-6">
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p
+          className={cn(
+            "mt-2 text-2xl font-bold tracking-tight",
+            trend === "up" && "text-green",
+            trend === "down" && "text-red",
+          )}
+        >
+          {value}
+        </p>
+        {subtitle ? (
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }

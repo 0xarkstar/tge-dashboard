@@ -3,6 +3,7 @@
 import type { DashboardStats } from "@/lib/types"
 import { formatNumber, cn } from "@/lib/utils"
 import { NumberTicker } from "@/components/ui/number-ticker"
+import { Card, CardContent } from "@/components/ui/card"
 import { useI18n } from "@/lib/i18n"
 
 interface HeroStatsProps {
@@ -31,30 +32,25 @@ function AnimatedStatCard({
   variant = "default",
 }: AnimatedStatCardProps) {
   return (
-    <div className={cn(
-      "rounded-xl border border-border p-5",
+    <Card className={cn(
       variant === "default" && "bg-card",
       variant === "green" && "bg-green/5 border-green/20",
       variant === "red" && "bg-red/5 border-red/20",
     )}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className={cn(
-        "mt-2 text-3xl font-bold tracking-tight",
-        variant === "green" && "text-green",
-        variant === "red" && "text-red",
-      )}>
-        <NumberTicker
-          value={numericValue}
-          prefix={prefix}
-          suffix={suffix}
-          decimalPlaces={decimalPlaces}
-          delay={delay}
-        />
-      </p>
-      {subtext && (
-        <p className="mt-1 text-sm text-muted-foreground">{subtext}</p>
-      )}
-    </div>
+      <CardContent className="p-5">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className={cn(
+          "mt-2 text-3xl font-bold tracking-tight",
+          variant === "green" && "text-green",
+          variant === "red" && "text-red",
+        )}>
+          {prefix}<NumberTicker value={numericValue} decimalPlaces={decimalPlaces} delay={delay} className="text-inherit" />{suffix}
+        </p>
+        {subtext && (
+          <p className="mt-1 text-sm text-muted-foreground">{subtext}</p>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

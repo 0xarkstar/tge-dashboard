@@ -2,6 +2,8 @@
 
 import { Category, FdvTier } from "@/lib/types"
 import { useI18n } from "@/lib/i18n"
+import { Input } from "@/components/ui/input"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 const CATEGORIES = Category.options
 const TIERS = FdvTier.options
@@ -34,13 +36,13 @@ export function TableFilters({
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative w-full sm:w-64">
         <label htmlFor="search-filter" className="sr-only">Search ticker or name</label>
-        <input
+        <Input
           id="search-filter"
           type="text"
           placeholder={t("tokens.search")}
           value={globalFilter}
           onChange={(e) => onGlobalFilterChange(e.target.value)}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full pr-8"
+          className="w-full pr-8"
         />
         {globalFilter && (
           <button
@@ -53,50 +55,41 @@ export function TableFilters({
         )}
       </div>
 
-      <label htmlFor="category-filter" className="sr-only">Filter by category</label>
-      <select
-        id="category-filter"
-        value={categoryFilter}
-        onChange={(e) => onCategoryFilterChange(e.target.value)}
-        className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">{t("tokens.allCategories")}</option>
-        {CATEGORIES.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
-      </select>
+      <Select value={categoryFilter || undefined} onValueChange={(v) => onCategoryFilterChange(v === "__all__" ? "" : v)}>
+        <SelectTrigger id="category-filter" className="w-[160px]">
+          <SelectValue placeholder={t("tokens.allCategories")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">{t("tokens.allCategories")}</SelectItem>
+          {CATEGORIES.map((cat) => (
+            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <label htmlFor="tier-filter" className="sr-only">Filter by FDV tier</label>
-      <select
-        id="tier-filter"
-        value={tierFilter}
-        onChange={(e) => onTierFilterChange(e.target.value)}
-        className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">{t("tokens.allTiers")}</option>
-        {TIERS.map((tier) => (
-          <option key={tier} value={tier}>
-            {tier.charAt(0).toUpperCase() + tier.slice(1)}
-          </option>
-        ))}
-      </select>
+      <Select value={tierFilter || undefined} onValueChange={(v) => onTierFilterChange(v === "__all__" ? "" : v)}>
+        <SelectTrigger id="tier-filter" className="w-[140px]">
+          <SelectValue placeholder={t("tokens.allTiers")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">{t("tokens.allTiers")}</SelectItem>
+          {TIERS.map((tier) => (
+            <SelectItem key={tier} value={tier}>{tier.charAt(0).toUpperCase() + tier.slice(1)}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <label htmlFor="half-filter" className="sr-only">Filter by half</label>
-      <select
-        id="half-filter"
-        value={halfFilter}
-        onChange={(e) => onHalfFilterChange(e.target.value)}
-        className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">{t("tokens.allHalves")}</option>
-        {HALVES.map((half) => (
-          <option key={half} value={half}>
-            {half}
-          </option>
-        ))}
-      </select>
+      <Select value={halfFilter || undefined} onValueChange={(v) => onHalfFilterChange(v === "__all__" ? "" : v)}>
+        <SelectTrigger id="half-filter" className="w-[140px]">
+          <SelectValue placeholder={t("tokens.allHalves")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">{t("tokens.allHalves")}</SelectItem>
+          {HALVES.map((half) => (
+            <SelectItem key={half} value={half}>{half}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

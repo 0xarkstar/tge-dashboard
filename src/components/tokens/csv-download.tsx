@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { TGEToken } from "@/lib/types"
 import { useI18n } from "@/lib/i18n"
+import { Button } from "@/components/ui/button"
 
 function escapeCSV(value: string): string {
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -71,10 +72,7 @@ export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }
   }
 
   return (
-    <button
-      onClick={handleDownload}
-      className="inline-flex items-center gap-2 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
-    >
+    <Button variant="secondary" onClick={handleDownload} className="gap-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -91,6 +89,6 @@ export function CSVDownload({ tokens }: { readonly tokens: readonly TGEToken[] }
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
       {downloaded ? t("tokens.downloaded") : t("tokens.exportCsv")}
-    </button>
+    </Button>
   )
 }
