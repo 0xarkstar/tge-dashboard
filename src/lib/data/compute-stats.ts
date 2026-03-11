@@ -135,16 +135,18 @@ export function computeDashboardStats(tokens: readonly TGEToken[]): DashboardSta
   }
 }
 
+/** Top performers use ALL launched tokens — outlier exclusion is only for aggregate stats */
 export function getTopPerformers(tokens: readonly TGEToken[], n = 10): readonly TGEToken[] {
-  const launched = getAnalyticsTokens(tokens)
+  const launched = launchedOnly(tokens)
   return [...launched]
     .filter((t) => t.fdv_change_pct != null)
     .sort((a, b) => (b.fdv_change_pct ?? 0) - (a.fdv_change_pct ?? 0))
     .slice(0, n)
 }
 
+/** Bottom performers use ALL launched tokens — outlier exclusion is only for aggregate stats */
 export function getBottomPerformers(tokens: readonly TGEToken[], n = 10): readonly TGEToken[] {
-  const launched = getAnalyticsTokens(tokens)
+  const launched = launchedOnly(tokens)
   return [...launched]
     .filter((t) => t.fdv_change_pct != null)
     .sort((a, b) => (a.fdv_change_pct ?? 0) - (b.fdv_change_pct ?? 0))

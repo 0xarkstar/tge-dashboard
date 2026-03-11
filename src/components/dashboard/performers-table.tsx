@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { TGEToken } from "@/lib/types"
-import { formatPercent, formatNumber, cn } from "@/lib/utils"
+import { formatNumber, cn } from "@/lib/utils"
 
 const TIER_DISPLAY: Record<string, { label: string; className: string }> = {
   mega: { label: "Mega", className: "bg-purple-500/15 text-purple-400" },
@@ -46,6 +46,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
             {tokens.map((token, index) => {
               const isGreen = (token.fdv_change_pct ?? 0) >= 0
               const arrow = isGreen ? "▲" : "▼"
+              const absChange = token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"
               return (
                 <tr
                   key={token.ticker}
@@ -68,7 +69,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                       variant === "top" ? "text-green" : "text-red",
                     )}
                   >
-                    {arrow} {formatPercent(token.fdv_change_pct)}
+                    {arrow} {absChange}
                   </td>
                   <td className="px-5 py-3 text-right text-muted-foreground">
                     {formatNumber(token.starting_fdv)}
@@ -102,7 +103,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                 <div>
                   <span className="text-muted-foreground">FDV Change: </span>
                   <span className={variant === "top" ? "text-green" : "text-red"}>
-                    {isGreen ? "\u25B2" : "\u25BC"} {formatPercent(token.fdv_change_pct)}
+                    {isGreen ? "\u25B2" : "\u25BC"} {token.fdv_change_pct != null ? Math.abs(token.fdv_change_pct).toFixed(1) + "%" : "N/A"}
                   </span>
                 </div>
                 <div>
