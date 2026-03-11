@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import fs from "fs";
+import path from "path";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
@@ -28,6 +30,14 @@ export const metadata: Metadata = {
   },
 };
 
+function getLastUpdated(): string {
+  const filePath = path.join(process.cwd(), "data", "tokens.json")
+  const tokens = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Array<{ last_updated: string }>
+  const timestamps = tokens.map(t => new Date(t.last_updated).getTime())
+  const latest = new Date(Math.max(...timestamps))
+  return latest.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -38,7 +48,7 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased flex min-h-screen flex-col`}>
         <SiteHeader />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <SiteFooter lastUpdated={getLastUpdated()} />
       </body>
     </html>
   );

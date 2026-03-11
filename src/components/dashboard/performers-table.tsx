@@ -1,3 +1,4 @@
+import Link from "next/link"
 import type { TGEToken } from "@/lib/types"
 import { formatPercent, formatNumber, cn } from "@/lib/utils"
 
@@ -13,7 +14,7 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
       <div className="border-b border-border px-5 py-4">
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground">
@@ -37,7 +38,9 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                     {index + 1}
                   </td>
                   <td className="px-5 py-3 font-mono font-semibold">
-                    {token.ticker}
+                    <Link href={`/tokens/${token.ticker}`} className="hover:text-primary transition-colors hover:underline">
+                      {token.ticker}
+                    </Link>
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">
                     {token.name}
@@ -58,6 +61,38 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3 p-4">
+        {tokens.map((token, index) => {
+          const isGreen = (token.fdv_change_pct ?? 0) >= 0
+          return (
+            <div key={token.ticker} className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">{index + 1}.</span>
+                  <Link href={`/tokens/${token.ticker}`} className="font-mono font-semibold hover:text-primary transition-colors hover:underline">
+                    {token.ticker}
+                  </Link>
+                  <span className="text-sm text-muted-foreground">{token.name}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">FDV Change: </span>
+                  <span className={variant === "top" ? "text-green" : "text-red"}>
+                    {isGreen ? "\u25B2" : "\u25BC"} {formatPercent(token.fdv_change_pct)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Starting FDV: </span>
+                  {formatNumber(token.starting_fdv)}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -49,14 +49,30 @@ export const FDV_TIER_LABELS: Record<FdvTier, string> = {
 
 export const DATA_URL = {
   tokens:
-    "https://raw.githubusercontent.com/{owner}/{repo}/data/data/tokens.json",
+    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/data/data/tokens.json",
   stats:
-    "https://raw.githubusercontent.com/{owner}/{repo}/data/data/stats.json",
+    "https://raw.githubusercontent.com/0xarkstar/tge-dashboard/data/data/stats.json",
 }
+
+export const CHART_THEME = {
+  grid: "oklch(0.3 0 0)",
+  axis: "oklch(0.65 0 0)",
+  tooltipBg: "oklch(0.178 0 0)",
+  tooltipBorder: "oklch(0.3 0 0)",
+  tooltipText: "oklch(0.985 0 0)",
+  green: "oklch(0.7 0.18 145)",
+  red: "oklch(0.6 0.2 27)",
+  reference: "oklch(0.5 0 0)",
+  scatter: "oklch(0.7 0.15 250)",
+  h1: "oklch(0.7 0.15 250)",
+  h2: "oklch(0.7 0.15 310)",
+} as const
+
+export const OUTLIER_TICKERS = ["WLFI"] as const
 
 export const SITE_CONFIG = {
   name: "2025 TGE Performance Dashboard",
   description:
-    "Track 118 VC-backed token generation events and their market performance in 2025.",
-  github: "https://github.com/{owner}/{repo}",
+    "Track VC-backed token generation events and their market performance in 2025.",
+  github: "https://github.com/0xarkstar/tge-dashboard",
 }

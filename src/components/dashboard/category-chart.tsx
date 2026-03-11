@@ -2,7 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import type { DashboardStats } from "@/lib/types"
-import { CATEGORY_COLORS } from "@/lib/constants"
+import { CATEGORY_COLORS, CHART_THEME } from "@/lib/constants"
 import type { Category } from "@/lib/types"
 
 interface CategoryChartProps {
@@ -46,23 +46,23 @@ export function CategoryChart({ stats }: CategoryChartProps) {
           >
             <XAxis
               type="number"
-              tick={{ fill: "oklch(0.65 0 0)", fontSize: 12 }}
+              tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
               tickFormatter={(v: number) => `${v}%`}
-              axisLine={{ stroke: "oklch(0.3 0 0)" }}
+              axisLine={{ stroke: CHART_THEME.grid }}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fill: "oklch(0.65 0 0)", fontSize: 12 }}
-              axisLine={{ stroke: "oklch(0.3 0 0)" }}
+              tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+              axisLine={{ stroke: CHART_THEME.grid }}
               width={75}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "oklch(0.178 0 0)",
-                border: "1px solid oklch(0.3 0 0)",
+                backgroundColor: CHART_THEME.tooltipBg,
+                border: `1px solid ${CHART_THEME.tooltipBorder}`,
                 borderRadius: "0.5rem",
-                color: "oklch(0.985 0 0)",
+                color: CHART_THEME.tooltipText,
               }}
               formatter={((_value: number, _name: string, props: { payload: ChartDataItem }) => {
                 const v = props.payload.originalChange

@@ -3,15 +3,16 @@
 import { useMemo } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
 import type { TGEToken } from "@/lib/types"
-import { computeMedian } from "@/lib/data/compute-stats"
+import { computeMedian, getAnalyticsTokens } from "@/lib/data/compute-stats"
+import { CHART_THEME } from "@/lib/constants"
 
 interface HalfComparisonProps {
   readonly tokens: readonly TGEToken[]
 }
 
 function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
-  const filtered = tokens.filter(
-    (t) => t.half === half && t.status === "launched"
+  const filtered = getAnalyticsTokens(tokens).filter(
+    (t) => t.half === half
   )
   const changes = filtered
     .map((t) => t.fdv_change_pct)
@@ -27,7 +28,7 @@ function computeHalfStats(tokens: readonly TGEToken[], half: "H1" | "H2") {
   return {
     half,
     count: filtered.length,
-    median_change: computeMedian(changes),
+    median_change: computeMedian(changes) ?? 0,
     avg_change: Math.round(avgChange * 100) / 100,
     green_count: greenCount,
     red_count: filtered.length - greenCount,
@@ -126,29 +127,29 @@ export function HalfComparison({ tokens }: HalfComparisonProps) {
             data={comparisonData}
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
             <XAxis
               dataKey="metric"
-              stroke="oklch(0.65 0 0)"
+              stroke={CHART_THEME.axis}
               fontSize={12}
             />
             <YAxis
-              stroke="oklch(0.65 0 0)"
+              stroke={CHART_THEME.axis}
               fontSize={12}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "oklch(0.178 0 0)",
-                border: "1px solid oklch(0.3 0 0)",
+                backgroundColor: CHART_THEME.tooltipBg,
+                border: `1px solid ${CHART_THEME.tooltipBorder}`,
                 borderRadius: "8px",
-                color: "oklch(0.985 0 0)",
+                color: CHART_THEME.tooltipText,
               }}
               formatter={((value: number) => [`${value.toFixed(2)}%`]) as never}
             />
-            <Legend wrapperStyle={{ color: "oklch(0.65 0 0)" }} />
-            <Bar dataKey="H1" fill="oklch(0.7 0.15 250)" />
-            <Bar dataKey="H2" fill="oklch(0.7 0.15 310)" />
+            <Legend wrapperStyle={{ color: CHART_THEME.axis }} />
+            <Bar dataKey="H1" fill={CHART_THEME.h1} />
+            <Bar dataKey="H2" fill={CHART_THEME.h2} />
           </BarChart>
         </ResponsiveContainer>
       </div>

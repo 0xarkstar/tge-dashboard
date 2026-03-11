@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ExternalLink } from "lucide-react"
 import { TGETokenSchema } from "@/lib/types"
 import type { TGEToken } from "@/lib/types"
 import { FDV_TIER_LABELS } from "@/lib/constants"
@@ -119,6 +119,17 @@ export default async function TokenDetailPage({
         <CategoryBadge category={token.category} />
         <ChainBadge chain={token.chain} />
         <StatusBadge status={token.performance_status} />
+        {token.coingecko_id ? (
+          <a
+            href={`https://www.coingecko.com/en/coins/${token.coingecko_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+          >
+            CoinGecko
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : null}
       </div>
 
       {/* Share */}

@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts"
 import type { TGEToken } from "@/lib/types"
+import { CHART_THEME } from "@/lib/constants"
 
 interface VcRoiChartProps {
   readonly tokens: readonly TGEToken[]
@@ -50,42 +51,42 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
         <div className="h-96 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
               <XAxis
                 dataKey="vc_raised"
                 name="VC Raised"
-                stroke="oklch(0.65 0 0)"
+                stroke={CHART_THEME.axis}
                 fontSize={12}
                 tickFormatter={(v: number) => formatMillions(v)}
                 label={{
                   value: "VC Raised ($M)",
                   position: "insideBottom",
                   offset: -10,
-                  style: { fill: "oklch(0.65 0 0)", fontSize: 12 },
+                  style: { fill: CHART_THEME.axis, fontSize: 12 },
                 }}
               />
               <YAxis
                 dataKey="fdv_change"
                 name="FDV Change"
-                stroke="oklch(0.65 0 0)"
+                stroke={CHART_THEME.axis}
                 fontSize={12}
                 tickFormatter={(v: number) => `${v}%`}
                 label={{
                   value: "FDV Change %",
                   angle: -90,
                   position: "insideLeft",
-                  style: { fill: "oklch(0.65 0 0)", fontSize: 12 },
+                  style: { fill: CHART_THEME.axis, fontSize: 12 },
                 }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "oklch(0.178 0 0)",
-                  border: "1px solid oklch(0.3 0 0)",
+                  backgroundColor: CHART_THEME.tooltipBg,
+                  border: `1px solid ${CHART_THEME.tooltipBorder}`,
                   borderRadius: "8px",
-                  color: "oklch(0.985 0 0)",
+                  color: CHART_THEME.tooltipText,
                 }}
                 formatter={((value: number, name: string) => {
-                  if (name === "VC Raised") return [`$${value.toFixed(1)}M`, name]
+                  if (name === "VC Raised") return [formatMillions(value), name]
                   return [`${value.toFixed(2)}%`, "FDV Change"]
                 }) as never}
                 labelFormatter={((_label: string, payload: Array<{ payload?: { ticker?: string } }>) => {
@@ -93,10 +94,10 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
                   return item?.ticker ?? ""
                 }) as never}
               />
-              <ReferenceLine y={0} stroke="oklch(0.5 0 0)" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
               <Scatter
                 data={vcTokens}
-                fill="oklch(0.7 0.15 250)"
+                fill={CHART_THEME.scatter}
                 fillOpacity={0.7}
               />
             </ScatterChart>
@@ -123,7 +124,7 @@ export function VcRoiChart({ tokens }: VcRoiChartProps) {
                   <td className="px-4 py-3 font-medium">{t.ticker}</td>
                   <td className="px-4 py-3 text-muted-foreground">{t.name}</td>
                   <td className="px-4 py-3">{t.category}</td>
-                  <td className="px-4 py-3 text-right">${t.vc_raised.toFixed(0)}M</td>
+                  <td className="px-4 py-3 text-right">{formatMillions(t.vc_raised)}</td>
                   <td className={`px-4 py-3 text-right ${t.fdv_change >= 0 ? "text-green" : "text-red"}`}>
                     {t.fdv_change >= 0 ? "\u25B2" : "\u25BC"} {Math.abs(t.fdv_change).toFixed(2)}%
                   </td>

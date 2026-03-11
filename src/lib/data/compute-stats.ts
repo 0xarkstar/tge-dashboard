@@ -1,6 +1,7 @@
 import type { TGEToken, DashboardStats, CategoryStats, TierStats, Category, FdvTier } from "@/lib/types"
+import { FDV_TIER_LABELS, OUTLIER_TICKERS } from "@/lib/constants"
 
-export const OUTLIER_TICKERS = ["WLFI"] as const
+export { OUTLIER_TICKERS }
 
 function excludeOutliers(tokens: readonly TGEToken[]): readonly TGEToken[] {
   return tokens.filter((t) => !OUTLIER_TICKERS.includes(t.ticker as typeof OUTLIER_TICKERS[number]))
@@ -10,8 +11,13 @@ function launchedOnly(tokens: readonly TGEToken[]): readonly TGEToken[] {
   return tokens.filter((t) => t.status === "launched")
 }
 
-export function computeMedian(values: readonly number[]): number {
-  if (values.length === 0) return 0
+/** Exclude outliers and filter to launched tokens — use for all analytics computations */
+export function getAnalyticsTokens(tokens: readonly TGEToken[]): readonly TGEToken[] {
+  return launchedOnly(excludeOutliers(tokens))
+}
+
+export function computeMedian(values: readonly number[]): number | null {
+  if (values.length === 0) return null
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   if (sorted.length % 2 === 0) {
@@ -30,7 +36,7 @@ function round2(n: number): number {
 }
 
 export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string, CategoryStats> {
-  const launched = launchedOnly(excludeOutliers(tokens))
+  const launched = getAnalyticsTokens(tokens)
   const byCategory = new Map<string, TGEToken[]>()
 
   for (const token of launched) {
@@ -53,7 +59,7 @@ export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string
 
     result[category] = {
       count: categoryTokens.length,
-      median_change: round2(computeMedian(changes)),
+      median_change: round2(computeMedian(changes) ?? 0),
       avg_change: round2(computeAverage(changes)),
       pct_green: round2((greenCount / categoryTokens.length) * 100),
       total_vc_raised: vcRaised.reduce((sum, v) => sum + v, 0),
@@ -64,19 +70,12 @@ export function computeCategoryStats(tokens: readonly TGEToken[]): Record<string
 }
 
 export function computeTierStats(tokens: readonly TGEToken[]): Record<string, TierStats> {
-  const launched = launchedOnly(excludeOutliers(tokens))
+  const launched = getAnalyticsTokens(tokens)
   const byTier = new Map<string, TGEToken[]>()
 
   for (const token of launched) {
     const existing = byTier.get(token.fdv_tier) ?? []
     byTier.set(token.fdv_tier, [...existing, token])
-  }
-
-  const tierLabels: Record<string, string> = {
-    mega: "\u2265$958M",
-    large: "$500M\u2013$958M",
-    mid: "$210M\u2013$500M",
-    small: "<$210M",
   }
 
   const result: Record<string, TierStats> = {}
@@ -90,10 +89,10 @@ export function computeTierStats(tokens: readonly TGEToken[]): Record<string, Ti
     const greenCount = tierTokens.filter((t) => t.performance_status === "green").length
 
     result[tier] = {
-      range_label: tierLabels[tier] ?? tier,
+      range_label: FDV_TIER_LABELS[tier as keyof typeof FDV_TIER_LABELS] ?? tier,
       count: tierTokens.length,
-      median_starting_fdv: round2(computeMedian(startingFdvs)),
-      median_change: round2(computeMedian(changes)),
+      median_starting_fdv: round2(computeMedian(startingFdvs) ?? 0),
+      median_change: round2(computeMedian(changes) ?? 0),
       pct_green: round2((greenCount / tierTokens.length) * 100),
     }
   }
@@ -103,7 +102,7 @@ export function computeTierStats(tokens: readonly TGEToken[]): Record<string, Ti
 
 export function computeDashboardStats(tokens: readonly TGEToken[]): DashboardStats {
   const filtered = excludeOutliers(tokens)
-  const launched = launchedOnly(filtered)
+  const launched = getAnalyticsTokens(tokens)
 
   const changes = launched
     .map((t) => t.fdv_change_pct)
@@ -124,7 +123,7 @@ export function computeDashboardStats(tokens: readonly TGEToken[]): DashboardSta
     green_count: greenCount,
     red_count: redCount,
     green_pct: round2((greenCount / Math.max(launched.length, 1)) * 100),
-    median_fdv_change: round2(computeMedian(changes)),
+    median_fdv_change: round2(computeMedian(changes) ?? 0),
     total_vc_raised: vcRaised.reduce((sum, v) => sum + v, 0),
     vc_data_coverage: vcCoverage,
     by_category: computeCategoryStats(tokens),
@@ -135,7 +134,7 @@ export function computeDashboardStats(tokens: readonly TGEToken[]): DashboardSta
 }
 
 export function getTopPerformers(tokens: readonly TGEToken[], n = 10): readonly TGEToken[] {
-  const launched = launchedOnly(excludeOutliers(tokens))
+  const launched = getAnalyticsTokens(tokens)
   return [...launched]
     .filter((t) => t.fdv_change_pct != null)
     .sort((a, b) => (b.fdv_change_pct ?? 0) - (a.fdv_change_pct ?? 0))
@@ -143,7 +142,7 @@ export function getTopPerformers(tokens: readonly TGEToken[], n = 10): readonly 
 }
 
 export function getBottomPerformers(tokens: readonly TGEToken[], n = 10): readonly TGEToken[] {
-  const launched = launchedOnly(excludeOutliers(tokens))
+  const launched = getAnalyticsTokens(tokens)
   return [...launched]
     .filter((t) => t.fdv_change_pct != null)
     .sort((a, b) => (a.fdv_change_pct ?? 0) - (b.fdv_change_pct ?? 0))

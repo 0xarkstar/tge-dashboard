@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Link from "next/link"
 import {
   useReactTable,
   getCoreRowModel,
@@ -38,7 +39,9 @@ const columns: ColumnDef<TGEToken>[] = [
     accessorKey: "ticker",
     header: "Ticker",
     cell: ({ getValue }) => (
-      <span className="font-semibold text-foreground">{getValue<string>()}</span>
+      <Link href={`/tokens/${getValue<string>()}`} className="font-semibold text-foreground hover:text-primary transition-colors hover:underline">
+        {getValue<string>()}
+      </Link>
     ),
   },
   {
@@ -76,7 +79,23 @@ const columns: ColumnDef<TGEToken>[] = [
   {
     accessorKey: "volume_24h",
     header: "Volume 24h",
-    cell: ({ getValue }) => formatUSD(getValue<number | null>()),
+    cell: ({ getValue, row }) => {
+      const volume = getValue<number | null>()
+      const isIlliquid = row.original.is_illiquid
+      return (
+        <span className={isIlliquid ? "text-muted-foreground" : ""}>
+          {formatUSD(volume)}
+          {isIlliquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">&#9888;</span> : null}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "fdv_tier",
+    header: "FDV Tier",
+    cell: ({ getValue }) => (
+      <span className="text-xs font-medium capitalize">{getValue<string>()}</span>
+    ),
   },
   {
     accessorKey: "half",
@@ -172,6 +191,13 @@ export function TokenTable({ tokens }: TokenTableProps) {
         Showing {filteredRows.length} of {tokens.length} tokens
       </p>
 
+      {filteredRows.length === 0 && (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-card py-16">
+          <p className="text-lg font-medium text-muted-foreground">No tokens match your filters</p>
+          <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filter criteria</p>
+        </div>
+      )}
+
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
@@ -224,9 +250,9 @@ export function TokenTable({ tokens }: TokenTableProps) {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-foreground">
+                  <Link href={`/tokens/${token.ticker}`} className="font-semibold text-foreground hover:text-primary transition-colors hover:underline">
                     {token.ticker}
-                  </span>
+                  </Link>
                   <span className="ml-2 text-sm text-muted-foreground">
                     {token.name}
                   </span>
@@ -251,6 +277,7 @@ export function TokenTable({ tokens }: TokenTableProps) {
                 <div>
                   <span className="text-muted-foreground">Vol 24h: </span>
                   {formatUSD(token.volume_24h)}
+                  {token.is_illiquid ? <span className="ml-1 text-xs text-chart-4" title="Low liquidity">&#9888;</span> : null}
                 </div>
                 <div>
                   <span className="text-muted-foreground">Half: </span>
@@ -267,28 +294,30 @@ export function TokenTable({ tokens }: TokenTableProps) {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount()}
+      {table.getPageCount() > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="rounded-md border border-border px-3 py-1.5 text-sm disabled:opacity-50 hover:bg-secondary transition-colors"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

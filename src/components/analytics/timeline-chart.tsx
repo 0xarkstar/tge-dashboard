@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts"
 import type { TGEToken } from "@/lib/types"
+import { CHART_THEME } from "@/lib/constants"
 
 interface TimelineChartProps {
   readonly tokens: readonly TGEToken[]
@@ -46,11 +47,11 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
         <div className="h-96 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0 0)" />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} />
               <XAxis
                 dataKey="timestamp"
                 name="TGE Date"
-                stroke="oklch(0.65 0 0)"
+                stroke={CHART_THEME.axis}
                 fontSize={11}
                 tickFormatter={(ts: number) => {
                   const d = new Date(ts)
@@ -62,16 +63,16 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
               <YAxis
                 dataKey="fdv_change"
                 name="FDV Change"
-                stroke="oklch(0.65 0 0)"
+                stroke={CHART_THEME.axis}
                 fontSize={12}
                 tickFormatter={(v: number) => `${v}%`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "oklch(0.178 0 0)",
-                  border: "1px solid oklch(0.3 0 0)",
+                  backgroundColor: CHART_THEME.tooltipBg,
+                  border: `1px solid ${CHART_THEME.tooltipBorder}`,
                   borderRadius: "8px",
-                  color: "oklch(0.985 0 0)",
+                  color: CHART_THEME.tooltipText,
                 }}
                 formatter={((value: number, name: string) => {
                   if (name === "TGE Date") {
@@ -84,10 +85,10 @@ export function TimelineChart({ tokens }: TimelineChartProps) {
                   return item?.ticker ?? ""
                 }) as never}
               />
-              <ReferenceLine y={0} stroke="oklch(0.5 0 0)" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke={CHART_THEME.reference} strokeDasharray="3 3" />
               <Scatter
                 data={timelineData}
-                fill="oklch(0.7 0.15 250)"
+                fill={CHART_THEME.scatter}
                 fillOpacity={0.7}
               />
             </ScatterChart>

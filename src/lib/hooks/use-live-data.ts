@@ -1,12 +1,14 @@
 "use client"
 
 import useSWR from "swr"
+import { z } from "zod"
 import type { TGEToken, DashboardStats } from "@/lib/types"
+import { TGETokenSchema } from "@/lib/types"
+import { DATA_URL as URLS } from "@/lib/constants"
 import { computeDashboardStats } from "@/lib/data/compute-stats"
 import staticTokens from "../../../data/tokens.json"
 
-const DATA_URL =
-  "https://raw.githubusercontent.com/OWNER/tge-dashboard/data/data/tokens.json"
+const LIVE_URL = URLS.tokens
 const FALLBACK_URL = "/data/tokens.json"
 const REFRESH_INTERVAL = 2 * 60 * 60 * 1000 // 2 hours
 
@@ -14,14 +16,20 @@ async function fetcher(url: string): Promise<TGEToken[]> {
   try {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return (await res.json()) as TGEToken[]
-  } catch {
-    if (url === DATA_URL) {
-      const res = await fetch(FALLBACK_URL)
-      if (!res.ok) throw new Error(`Fallback HTTP ${res.status}`)
-      return (await res.json()) as TGEToken[]
+    const raw: unknown = await res.json()
+    return z.array(TGETokenSchema).parse(raw)
+  } catch (err) {
+    if (url === LIVE_URL) {
+      try {
+        const res = await fetch(FALLBACK_URL)
+        if (!res.ok) throw new Error(`Fallback HTTP ${res.status}`)
+        const raw: unknown = await res.json()
+        return z.array(TGETokenSchema).parse(raw)
+      } catch {
+        return staticTokens as TGEToken[]
+      }
     }
-    throw new Error("Failed to fetch token data")
+    throw err instanceof Error ? err : new Error("Failed to fetch token data")
   }
 }
 
@@ -32,7 +40,7 @@ export function useLiveTokens(): {
   error: Error | undefined
   lastUpdated: string | undefined
 } {
-  const { data, error, isLoading } = useSWR<TGEToken[]>(DATA_URL, fetcher, {
+  const { data, error, isLoading } = useSWR<TGEToken[]>(LIVE_URL, fetcher, {
     refreshInterval: REFRESH_INTERVAL,
     fallbackData: staticTokens as TGEToken[],
     revalidateOnFocus: false,
@@ -41,7 +49,9 @@ export function useLiveTokens(): {
 
   const tokens = data ?? (staticTokens as TGEToken[])
   const stats = computeDashboardStats(tokens)
-  const lastUpdated = tokens.length > 0 ? tokens[0].last_updated : undefined
+  const lastUpdated = tokens.length > 0
+    ? new Date(Math.max(...tokens.map(t => new Date(t.last_updated).getTime()))).toISOString()
+    : undefined
 
   return { tokens, stats, isLoading, error, lastUpdated }
 }

@@ -63,11 +63,3 @@ export function formatDate(dateStr: string | null | undefined): string {
   })
 }
 
-export function formatCurrency(n: number | null | undefined): string {
-  if (n == null) return "N/A"
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n)
-}

@@ -1,8 +1,8 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts"
 import type { DashboardStats } from "@/lib/types"
-import { FDV_TIER_LABELS } from "@/lib/constants"
+import { FDV_TIER_LABELS, CHART_THEME } from "@/lib/constants"
 import type { FdvTier } from "@/lib/types"
 
 interface FdvTierChartProps {
@@ -48,42 +48,46 @@ export function FdvTierChart({ stats }: FdvTierChartProps) {
           >
             <XAxis
               dataKey="name"
-              tick={{ fill: "oklch(0.65 0 0)", fontSize: 12 }}
-              axisLine={{ stroke: "oklch(0.3 0 0)" }}
+              tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+              axisLine={{ stroke: CHART_THEME.grid }}
             />
             <YAxis
-              tick={{ fill: "oklch(0.65 0 0)", fontSize: 12 }}
-              axisLine={{ stroke: "oklch(0.3 0 0)" }}
+              tick={{ fill: CHART_THEME.axis, fontSize: 12 }}
+              axisLine={{ stroke: CHART_THEME.grid }}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "oklch(0.178 0 0)",
-                border: "1px solid oklch(0.3 0 0)",
+                backgroundColor: CHART_THEME.tooltipBg,
+                border: `1px solid ${CHART_THEME.tooltipBorder}`,
                 borderRadius: "0.5rem",
-                color: "oklch(0.985 0 0)",
+                color: CHART_THEME.tooltipText,
               }}
               formatter={((value: number, name: string, props: { payload: ChartDataItem }) => {
                 if (name === "absChange") {
                   const v = props.payload.originalChange
-                  return [`${v.toFixed(1)}%`, "Median FDV Change"]
+                  return [`${v >= 0 ? "+" : ""}${v.toFixed(1)}%`, "Median FDV Change"]
                 }
                 return [`${value.toFixed(1)}%`, "% Green"]
               }) as never}
             />
             <Legend
-              wrapperStyle={{ color: "oklch(0.65 0 0)" }}
+              wrapperStyle={{ color: CHART_THEME.axis }}
               formatter={(value: string) =>
                 value === "absChange" ? "Median FDV Change" : "% Green"
               }
             />
-            <Bar
-              dataKey="absChange"
-              fill="oklch(0.6 0.2 27)"
-            />
+            <Bar dataKey="absChange">
+              {data.map((entry) => (
+                <Cell
+                  key={entry.name}
+                  fill={entry.originalChange >= 0 ? CHART_THEME.green : CHART_THEME.red}
+                />
+              ))}
+            </Bar>
             <Bar
               dataKey="pct_green"
-              fill="oklch(0.7 0.18 145)"
+              fill={CHART_THEME.green}
             />
           </BarChart>
         </ResponsiveContainer>
