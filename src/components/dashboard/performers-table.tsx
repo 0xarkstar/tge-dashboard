@@ -32,16 +32,15 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
       <div className="border-b border-border px-5 py-4">
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block">
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="px-5 w-[6%]">#</TableHead>
-              <TableHead className="px-5 w-[18%]">Ticker</TableHead>
-              <TableHead className="px-5 w-[26%]">Name</TableHead>
-              <TableHead className="px-5 w-[20%] text-right">FDV Change</TableHead>
-              <TableHead className="px-5 w-[18%] text-right">Starting FDV</TableHead>
-              <TableHead className="px-5 w-[12%] text-center">FDV Tier</TableHead>
+              <TableHead className="px-3 w-[7%]">#</TableHead>
+              <TableHead className="px-3 w-[20%]">Ticker</TableHead>
+              <TableHead className="px-3 w-[28%]">Name</TableHead>
+              <TableHead className="px-3 w-[20%] text-right">FDV Change</TableHead>
+              <TableHead className="px-3 w-[25%] text-right">Starting FDV</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -53,30 +52,27 @@ export function PerformersTable({ tokens, title, variant }: PerformersTableProps
                 <TableRow
                   key={token.ticker}
                 >
-                  <TableCell className="px-5 text-muted-foreground">
+                  <TableCell className="px-3 text-muted-foreground">
                     {index + 1}
                   </TableCell>
-                  <TableCell className="px-5 font-mono font-semibold">
+                  <TableCell className="px-3 font-mono font-semibold">
                     <Link href={`/tokens/${token.ticker}`} className="hover:text-primary transition-colors hover:underline">
                       {token.ticker}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-5 text-muted-foreground">
+                  <TableCell className="px-3 text-muted-foreground truncate">
                     {token.name}
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "px-5 text-right font-medium",
+                      "px-3 text-right font-medium",
                       variant === "top" ? "text-green" : "text-red",
                     )}
                   >
                     {arrow} {absChange}
                   </TableCell>
-                  <TableCell className="px-5 text-right text-muted-foreground">
+                  <TableCell className="px-3 text-right text-muted-foreground">
                     {formatNumber(token.starting_fdv)}
-                  </TableCell>
-                  <TableCell className="px-5 text-center">
-                    <FdvTierBadge tier={token.fdv_tier} />
                   </TableCell>
                 </TableRow>
               )
