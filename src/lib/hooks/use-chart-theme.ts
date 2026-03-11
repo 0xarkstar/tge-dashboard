@@ -18,11 +18,11 @@ export interface ChartTheme {
 }
 
 const DARK: ChartTheme = {
-  grid: "oklch(0.3 0 0)",
-  axis: "oklch(0.65 0 0)",
+  grid: "oklch(0.22 0 0)",
+  axis: "oklch(0.55 0 0)",
   tooltipBg: "oklch(0.178 0 0)",
-  tooltipBorder: "oklch(0.3 0 0)",
-  tooltipText: "oklch(0.985 0 0)",
+  tooltipBorder: "oklch(0.22 0 0)",
+  tooltipText: "oklch(0.93 0 0)",
   green: "oklch(0.7 0.18 145)",
   red: "oklch(0.6 0.2 27)",
   reference: "oklch(0.5 0 0)",
