@@ -1,10 +1,13 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import Link from "next/link"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts"
 import type { TGEToken, TierStats } from "@/lib/types"
 import { computeTierStats, getAnalyticsTokens, computeMedian } from "@/lib/data/compute-stats"
-import { CHART_THEME } from "@/lib/constants"
+import { formatNumber, formatPercent } from "@/lib/utils"
+import { CHART_THEME, FDV_TIER_LABELS } from "@/lib/constants"
+import type { FdvTier } from "@/lib/types"
 
 const TIER_ORDER = ["small", "mid", "large", "mega"] as const
 
@@ -124,6 +127,100 @@ export function FdvTierAnalysis({ tokens }: FdvTierAnalysisProps) {
         </table>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">* Analytics exclude outlier tokens (WLFI). Illiquid tokens included but may have unreliable price data.</p>
+
+      <TierTokenBreakdown tokens={tokens} />
+    </div>
+  )
+}
+
+function TierTokenBreakdown({ tokens }: { readonly tokens: readonly TGEToken[] }) {
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const analyticsTokens = useMemo(() => getAnalyticsTokens(tokens), [tokens])
+
+  const tokensByTier = useMemo(() => {
+    const map = new Map<string, readonly TGEToken[]>()
+    for (const tier of TIER_ORDER) {
+      const tierTokens = [...analyticsTokens]
+        .filter((t) => t.fdv_tier === tier)
+        .sort((a, b) => (b.fdv_change_pct ?? 0) - (a.fdv_change_pct ?? 0))
+      map.set(tier, tierTokens)
+    }
+    return map
+  }, [analyticsTokens])
+
+  const tierColors: Record<string, string> = {
+    small: CHART_THEME.scatter,
+    mid: CHART_THEME.axis,
+    large: CHART_THEME.h2,
+    mega: CHART_THEME.red,
+  }
+
+  return (
+    <div className="mt-6">
+      <h3 className="text-lg font-semibold mb-3">Token Breakdown by FDV Tier</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        {analyticsTokens.length} tokens across {TIER_ORDER.length} tiers. Click to expand.
+      </p>
+      <div className="space-y-2">
+        {TIER_ORDER.map((tier) => {
+          const tierTokens = tokensByTier.get(tier) ?? []
+          const isOpen = expanded === tier
+          const label = FDV_TIER_LABELS[tier as FdvTier]
+          return (
+            <div key={tier} className="rounded-lg border border-border">
+              <button
+                onClick={() => setExpanded(isOpen ? null : tier)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-secondary/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: tierColors[tier] }}
+                  />
+                  <span className="font-medium capitalize">{tier}</span>
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <span className="text-sm text-muted-foreground">({tierTokens.length})</span>
+                </div>
+                <span className="text-muted-foreground text-sm">{isOpen ? "▲" : "▼"}</span>
+              </button>
+              {isOpen && (
+                <div className="border-t border-border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-card">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Ticker</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium uppercase text-muted-foreground">Category</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Starting FDV</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">Current FDV</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium uppercase text-muted-foreground">FDV Change</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {tierTokens.map((t) => (
+                        <tr key={t.ticker} className="hover:bg-secondary/50 transition-colors">
+                          <td className="px-4 py-2 font-medium">
+                            <Link href={`/tokens/${t.ticker}`} className="hover:text-primary transition-colors hover:underline">
+                              {t.ticker}
+                            </Link>
+                          </td>
+                          <td className="px-4 py-2 text-muted-foreground">{t.name}</td>
+                          <td className="px-4 py-2">{t.category}</td>
+                          <td className="px-4 py-2 text-right">{formatNumber(t.starting_fdv)}</td>
+                          <td className="px-4 py-2 text-right">{formatNumber(t.current_fdv)}</td>
+                          <td className={`px-4 py-2 text-right ${(t.fdv_change_pct ?? 0) >= 0 ? "text-green" : "text-red"}`}>
+                            {formatPercent(t.fdv_change_pct)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
